@@ -1,0 +1,941 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Hindia — Home (local preview)</title>
+<!-- ============================================================
+  HINDIA 1024 — 00 GLOBAL
+  Where: Settings → Advanced → Code Injection → HEADER
+  Load this first. Every section block depends on it.
+  LOOK: dark "framed window" skin. Every colour, font and size of the
+  skin is set in the :root block below — change them there, nowhere else.
+============================================================ -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&display=swap">
+<style>
+/* ------------------------------------------------------------------
+   SKIN TOKENS — the whole look lives here.
+------------------------------------------------------------------- */
+:root{
+  --hx-frame:   #242529;  /* window frame, header bar, loader */
+  --hx-bg:      #0d0e10;  /* inside the window */
+  --hx-surface: #18191c;  /* cards, calendar, press kit */
+  --hx-text:    #c9c8c3;
+  --hx-heading: #f3f1ec;
+  --hx-accent:  #d9573b;  /* Listen-now pill, live dates, links */
+  --hx-font: "Archivo", "Helvetica Neue", Arial, sans-serif;
+  --hx-fw: 10px;          /* frame thickness (sides + bottom) */
+  --hx-fr: 22px;          /* window corner radius */
+  --hx-r:  14px;          /* card / media corner radius */
+  --hx-tab-drop: 26px;    /* how far the logo tab hangs into the window */
+
+  --h-max:1240px;
+  --h-gutter:clamp(20px,5vw,64px);
+  --h-header:58px;
+}
+@media (max-width:640px){
+  :root{--hx-fw:6px;--hx-fr:16px;--hx-tab-drop:12px;--h-header:52px}
+}
+.h-sec,.h-themed{
+  --h-bg:      var(--hx-bg);
+  --h-text:    var(--hx-text);
+  --h-heading: var(--hx-heading);
+  --h-accent:  var(--hx-accent);
+  --h-btn-bg:  var(--hx-heading);
+  --h-btn-text:var(--hx-bg);
+  --h-muted:       color-mix(in srgb, var(--h-text) 68%, var(--h-bg));
+  --h-bg-2:        var(--hx-surface);
+  --h-accent-soft: color-mix(in srgb, var(--h-accent) 22%, var(--h-bg));
+  --h-line:        color-mix(in srgb, var(--h-text) 18%, transparent);
+
+  --h-font-heading: var(--hx-font);
+  --h-font-body:    var(--hx-font);
+  --h-font-button:  var(--hx-font);
+  --h-hw:800; --h-hs:normal; --h-hls:-.01em; --h-htt:uppercase;
+  --h-bw:400; --h-btw:700;   --h-btls:.06em; --h-bttt:uppercase;
+}
+
+/* ---------- Window frame (drawn by .h-frame from the footer injection) ---------- */
+body{margin:0;background:var(--hx-bg)}
+/* every page starts below the top bar and ends above the bottom frame */
+body:has(#h-header){padding:var(--h-header) 0 var(--hx-fw)}
+.h-frame{position:fixed;inset:0;z-index:998;pointer-events:none}
+.h-frame::before{
+  content:"";position:absolute;inset:var(--h-header) var(--hx-fw) var(--hx-fw);
+  border-radius:var(--hx-fr);box-shadow:0 0 0 100vmax var(--hx-frame);
+}
+
+/* ---------- Loader: CSS-only so it shows before any script runs ---------- */
+body::before,body::after{position:fixed;z-index:1001;pointer-events:none;animation:h-out .4s 3.5s forwards}
+body::before{content:"";inset:0;background:var(--hx-frame)}
+body::after{
+  content:"hindia";left:50%;top:50%;transform:translate(-50%,-50%);
+  font:800 clamp(34px,6vw,56px)/1 var(--hx-font);letter-spacing:-.01em;color:var(--hx-heading);
+  animation:h-pulse 1.4s ease-in-out infinite alternate,h-out .4s 3.5s forwards;
+}
+body.h-ready::before,body.h-ready::after{animation:h-out .4s forwards}
+@keyframes h-out{to{opacity:0;visibility:hidden}}
+@keyframes h-pulse{from{opacity:.35}to{opacity:1}}
+
+/* ---------- Entrance: content comes into focus as the loader fades ---------- */
+body.h-ready .h-sec > .h-wrap,body.h-ready .h-hero__card,body.h-ready .h-hero__actions{animation:h-unblur .9s .1s cubic-bezier(.2,.7,.2,1) both}
+@keyframes h-unblur{from{opacity:0;filter:blur(20px)}to{opacity:1;filter:none}}
+
+/* ---------- Dark cards and media: rounded, like the frame ---------- */
+.h-audio__art,.h-audio__player iframe,.h-vid__frame,.h-merch__img,.h-merch__kv,.h-card,.h-card__photo,
+.h-news__thumb,.h-kit,.h-about__photo img,.h-shows__cal{border-radius:var(--hx-r);overflow:hidden}
+.h-shows__cal{border:0}
+
+/* ---------- Squarespace resets: let our sections run full-bleed ---------- */
+.page-section:has(.h-sec){min-height:0!important;padding:0!important;background:var(--hx-bg)!important}
+.page-section:has(.h-sec) .content-wrapper{padding:0!important;max-width:none!important}
+.page-section:has(.h-sec) .fluid-engine{row-gap:0!important}
+.sqs-block:has(.h-sec){padding:0!important}
+.sqs-block-code:has(.h-sec) .sqs-block-content{margin:0}
+/* hide Squarespace's native header when our header is present */
+body:has(#h-header) #header,
+body:has(#h-header) .header-announcement-bar-wrapper{display:none!important}
+
+/* ---------- Shared section primitives ---------- */
+.h-sec{
+  --pad:clamp(72px,10vw,136px);
+  position:relative;
+  background:var(--h-bg);
+  color:var(--h-text);
+  font-family:var(--h-font-body);
+  font-weight:var(--h-bw);
+  font-size:17px;
+  line-height:1.55;
+  padding:var(--pad) var(--h-gutter);
+  -webkit-font-smoothing:antialiased;
+}
+.h-sec *,.h-sec *::before,.h-sec *::after{box-sizing:border-box}
+.h-sec img{max-width:100%;display:block}
+.h-wrap{max-width:var(--h-max);margin:0 auto}
+
+.h-head{
+  display:flex;align-items:flex-end;justify-content:space-between;gap:24px;
+  border-bottom:1px solid var(--h-line);
+  padding-bottom:20px;margin-bottom:clamp(32px,5vw,56px);
+}
+.h-title{
+  font-family:var(--h-font-heading);
+  font-weight:var(--h-hw);
+  font-style:var(--h-hs);
+  letter-spacing:var(--h-hls);
+  text-transform:var(--h-htt);
+  color:var(--h-heading);
+  font-size:clamp(34px,5.2vw,72px);
+  line-height:.95;
+  margin:0;
+}
+/* every heading-font element shares the heading styling */
+.h-audio__name,.h-audio__fallback,.h-vid__title,.h-show__name,.h-show__date b,
+.h-shows__month,.h-merch__name,.h-merch__kvtitle,.h-card__title,.h-news__title,.h-kit__title,
+.h-guest__title,.h-foot__mark,.h-empty{
+  letter-spacing:var(--h-hls);text-transform:var(--h-htt);
+}
+.h-audio__name,.h-vid__title,.h-show__name,.h-merch__name,.h-card__title,
+.h-news__title,.h-guest__title,.h-foot__mark{color:var(--h-heading)}
+.h-merch__kvtitle,.h-kit__title{color:inherit}
+.h-lede{max-width:52ch;color:var(--h-muted);margin:14px 0 0;font-size:16px}
+
+.h-controls{display:flex;align-items:center;gap:14px;flex-shrink:0}
+.h-head > :first-child{min-width:0}
+@media (max-width:700px){
+  .h-head{flex-wrap:wrap;align-items:center}
+  .h-head > :first-child{flex:1 1 100%}
+  .h-controls{margin-left:auto}
+}
+.h-count{font-size:14px;font-variant-numeric:tabular-nums;opacity:.7;min-width:3.5em;text-align:right}
+.h-arrow{
+  width:48px;height:48px;border-radius:50%;
+  border:1px solid currentColor;background:transparent;color:inherit;
+  display:grid;place-items:center;cursor:pointer;padding:0;
+  transition:background-color .2s,color .2s;
+}
+.h-arrow:hover:not(:disabled){background:var(--h-heading);color:var(--h-bg);border-color:var(--h-heading)}
+.h-arrow:disabled{opacity:.25;cursor:default}
+.h-arrow svg{width:18px;height:18px}
+
+.h-btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:10px;
+  font-family:var(--h-font-button);font-weight:var(--h-btw);font-size:13px;line-height:1;
+  letter-spacing:var(--h-btls);text-transform:var(--h-bttt);
+  padding:14px 24px;border-radius:999px;
+  border:1px solid color-mix(in srgb,var(--h-heading) 30%,transparent);
+  background:color-mix(in srgb,var(--hx-surface) 85%,transparent);color:var(--h-heading);
+  text-decoration:none;cursor:pointer;transition:background-color .2s,color .2s,border-color .2s;
+}
+.h-btn:hover{background:var(--h-heading);color:var(--h-bg);border-color:var(--h-heading)}
+.h-btn--accent{background:var(--h-accent);border-color:var(--h-accent);color:var(--hx-heading)}
+.h-btn--accent:hover{background:transparent;color:var(--h-accent);border-color:var(--h-accent)}
+.h-btn--ghost{background:transparent}
+/* --light kept for compatibility: the primary button already contrasts with its section */
+
+.h-link{color:var(--h-accent);text-decoration:underline;text-underline-offset:4px;text-decoration-thickness:1px;font-weight:500}
+.h-link:hover{text-decoration-thickness:2px}
+
+.h-meta{display:grid;grid-template-columns:auto 1fr;gap:6px 20px;margin:0;font-size:15px}
+.h-meta dt{color:var(--h-muted)}
+.h-meta dd{margin:0;font-variant-numeric:tabular-nums}
+
+.h-empty{padding:40px 0;color:var(--h-muted);font-family:var(--h-font-heading);font-size:22px}
+
+.h-sec :focus-visible,.h-themed :focus-visible{outline:2px solid var(--h-accent);outline-offset:3px}
+.h-sr{position:absolute!important;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+@media (prefers-reduced-motion:reduce){
+  .h-sec *,.h-themed *{transition:none!important;animation:none!important}
+  body::after{animation:h-out .01s 3.5s forwards}
+  body.h-ready::before,body.h-ready::after{animation:h-out .01s forwards}
+}
+</style>
+
+<script>
+window.H1024 = window.H1024 || (function(){
+  var KEY = "h1024-lang";
+  var lang;
+  try { lang = localStorage.getItem(KEY); } catch(e) {}
+  if (lang !== "en" && lang !== "id") {
+    lang = (navigator.language || "").toLowerCase().indexOf("id") === 0 ? "id" : "en";
+  }
+  var subs = [];
+
+  /* t({en:"..", id:".."}) → string in the current language */
+  function t(v){
+    if (v == null) return "";
+    if (typeof v !== "object") return String(v);
+    return v[lang] != null ? v[lang] : (v.en != null ? v.en : "");
+  }
+
+  /* Swap text for any element with data-en / data-id attributes.
+     Also supports data-en-aria / data-id-aria and data-en-ph / data-id-ph. */
+  function applyStatic(root){
+    root = root || document;
+    root.querySelectorAll("[data-en]").forEach(function(el){
+      el.textContent = el.getAttribute("data-" + lang) || el.getAttribute("data-en");
+    });
+    root.querySelectorAll("[data-en-aria]").forEach(function(el){
+      el.setAttribute("aria-label", el.getAttribute("data-" + lang + "-aria") || el.getAttribute("data-en-aria"));
+    });
+    root.querySelectorAll("[data-en-ph]").forEach(function(el){
+      el.setAttribute("placeholder", el.getAttribute("data-" + lang + "-ph") || el.getAttribute("data-en-ph"));
+    });
+  }
+
+  function setLang(l){
+    if (l !== "en" && l !== "id") return;
+    lang = l;
+    try { localStorage.setItem(KEY, l); } catch(e) {}
+    document.documentElement.setAttribute("lang", l);
+    applyStatic();
+    subs.forEach(function(fn){ try { fn(l); } catch(e) { console.error(e); } });
+  }
+  function onLang(fn){ subs.push(fn); }
+
+  function esc(s){
+    return String(s == null ? "" : s).replace(/[&<>"']/g, function(c){
+      return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];
+    });
+  }
+  function locale(){ return lang === "id" ? "id-ID" : "en-GB"; }
+
+  /* Generic prev/next controller.
+     opts: prev, next, status (elements), count(), perView(), onChange(index), swipe (element) */
+  function stepper(opts){
+    var i = 0;
+    var per = opts.perView || function(){ return 1; };
+    function max(){ return Math.max(0, opts.count() - per()); }
+    function go(n){
+      i = Math.min(Math.max(n, 0), max());
+      opts.prev.disabled = i === 0;
+      opts.next.disabled = i >= max();
+      if (opts.status) {
+        var pages = max() + 1;
+        opts.status.textContent = pages > 1 ? (i + 1) + " / " + pages : "";
+      }
+      opts.onChange(i);
+    }
+    opts.prev.addEventListener("click", function(){ go(i - 1); });
+    opts.next.addEventListener("click", function(){ go(i + 1); });
+    if (opts.swipe) {
+      var x0 = null;
+      opts.swipe.addEventListener("touchstart", function(e){ x0 = e.touches[0].clientX; }, {passive:true});
+      opts.swipe.addEventListener("touchend", function(e){
+        if (x0 == null) return;
+        var dx = e.changedTouches[0].clientX - x0;
+        if (Math.abs(dx) > 48) go(i + (dx < 0 ? 1 : -1));
+        x0 = null;
+      });
+    }
+    window.addEventListener("resize", function(){ go(i); });
+    return { go: go, get index(){ return i; } };
+  }
+
+  var icon = {
+    prev: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>',
+    next: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>',
+    play: '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5.5v13l11-6.5z"/></svg>'
+  };
+
+  document.documentElement.setAttribute("lang", lang);
+  document.addEventListener("DOMContentLoaded", function(){ applyStatic(); });
+
+  return {
+    get lang(){ return lang; },
+    t: t, setLang: setLang, onLang: onLang, applyStatic: applyStatic,
+    esc: esc, locale: locale, stepper: stepper, icon: icon
+  };
+})();
+</script>
+</head><body>
+<!-- LOCAL PREVIEW ONLY. Not for Squarespace. -->
+<section class="page-section"><div class="content-wrapper"><!-- ============================================================
+  HINDIA 1024 — 02 HOME (full-window video + latest release)
+  Where: Home page, its only section → Code Block.
+  EDIT:
+   - home-video.mp4 / POSTER_URL below (MP4, H.264, ≤ 8–10 MB, 720p is enough).
+     Host them on Squarespace (upload as a file): the liquid effect in 01c needs
+     a host that allows cross-site use, which Squarespace does.
+   - RELEASE_COVER_URL, RELEASE_TITLE, FOLLOW_URL
+  The guest book pop-up lives in 01b (site-wide).
+  COLOURS: set in the :root block of 00-global-HEADER-injection.html.
+============================================================ -->
+<section class="h-sec h-hero" id="home">
+  <video class="h-hero__video" autoplay muted loop playsinline preload="metadata" crossorigin="anonymous"
+         poster="POSTER_URL">
+    <source src="home-video.mp4" type="video/mp4">
+  </video>
+  <div class="h-hero__shade" aria-hidden="true"></div>
+
+  <h1 class="h-sr">Hindia</h1>
+
+  <!-- latest release card — EDIT: RELEASE_COVER_URL, release title, LISTEN_URL -->
+  <div class="h-hero__card">
+    <img class="h-hero__cover" src="RELEASE_COVER_URL" alt="" width="104" height="104">
+    <div class="h-hero__info">
+      <p class="h-hero__kicker" data-en="Out now" data-id="Sudah rilis">Out now</p>
+      <p class="h-hero__release">RELEASE_TITLE</p>
+      <a class="h-btn h-btn--accent" href="/music" data-en="Listen now" data-id="Dengar sekarang">Listen now</a>
+    </div>
+  </div>
+
+  <div class="h-hero__actions">
+    <button type="button" class="h-btn" data-open-guestbook
+            data-en="Sign the guest book" data-id="Isi buku tamu">Sign the guest book</button>
+    <a class="h-btn" href="FOLLOW_URL" target="_blank" rel="noopener"
+       data-en="Follow" data-id="Ikuti">Follow</a>
+    <button type="button" class="h-hero__pause" aria-pressed="false"
+            data-en-aria="Pause background video" data-id-aria="Jeda video latar">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path class="i-pause" d="M8 5h3v14H8zM13 5h3v14h-3z" fill="currentColor"/><path class="i-play" d="M8 5.5v13l11-6.5z" fill="currentColor"/></svg>
+    </button>
+  </div>
+</section>
+
+<style>
+.h-hero{
+  /* fills the window: viewport minus top bar and bottom frame */
+  box-sizing:border-box;min-height:calc(100svh - var(--h-header) - var(--hx-fw));
+  display:flex;align-items:flex-end;justify-content:space-between;gap:20px;flex-wrap:wrap;
+  padding:calc(var(--hx-tab-drop) + 24px) calc(var(--hx-fw) + 16px) calc(var(--hx-fw) + 16px);
+  background:var(--h-bg);color:var(--h-heading);overflow:hidden;isolation:isolate;
+}
+.h-hero__video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:-2}
+.h-hero__shade{position:absolute;inset:0;z-index:-1;
+  background:linear-gradient(180deg,transparent 55%,color-mix(in srgb,var(--h-bg) 70%,transparent) 100%)}
+.h-hero__card{
+  display:flex;gap:18px;align-items:center;max-width:420px;
+  padding:14px 22px 14px 14px;border-radius:var(--hx-r);
+  background:color-mix(in srgb,var(--hx-frame) 88%,transparent);
+  border:1px solid color-mix(in srgb,var(--h-heading) 14%,transparent);
+  -webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);
+}
+.h-hero__cover{width:104px;height:104px;object-fit:cover;border-radius:6px;background:var(--hx-surface);flex-shrink:0}
+.h-hero__kicker{margin:0;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--h-muted)}
+.h-hero__release{margin:4px 0 12px;font-weight:800;font-size:17px;line-height:1.15;text-transform:uppercase;color:var(--h-heading)}
+.h-hero__actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.h-hero__pause{
+  width:44px;height:44px;border-radius:50%;border:1px solid color-mix(in srgb,var(--h-heading) 30%,transparent);
+  background:color-mix(in srgb,var(--hx-surface) 85%,transparent);color:var(--h-heading);cursor:pointer;display:grid;place-items:center;
+}
+@media (max-width:640px){
+  .h-hero{flex-direction:column-reverse;align-items:stretch;justify-content:flex-start}
+  .h-hero__card{max-width:none}
+  .h-hero__cover{width:84px;height:84px}
+}
+.h-hero__pause svg{width:16px;height:16px}
+.h-hero__pause .i-play{display:none}
+.h-hero__pause[aria-pressed="true"] .i-play{display:block}
+.h-hero__pause[aria-pressed="true"] .i-pause{display:none}
+
+</style>
+
+<script>
+(function(){
+  var hero = document.getElementById("home");
+  if (!hero || !window.H1024) return;
+
+  /* background video: respect reduced motion, give a pause control */
+  var video = hero.querySelector("video");
+  var pauseBtn = hero.querySelector(".h-hero__pause");
+  function setPaused(p){ p ? video.pause() : video.play().catch(function(){}); pauseBtn.setAttribute("aria-pressed", String(p)); }
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) setPaused(true);
+  pauseBtn.addEventListener("click", function(){ setPaused(!video.paused ? true : false); });
+
+  H1024.applyStatic(hero);
+})();
+</script>
+</div></section>
+<section class="page-section"><div class="content-wrapper"><!-- ============================================================
+  HINDIA 1024 — 10 FOOTER
+  Where: Code Block inside the SITE FOOTER (Edit site footer) —
+  it then appears on every page. Year updates itself.
+============================================================ -->
+<footer class="h-sec h-foot" id="h-footer">
+  <div class="h-wrap">
+    <div class="h-foot__top">
+      <p class="h-foot__mark">hindia</p>
+      <nav aria-label="Footer">
+        <ul class="h-foot__nav">
+          <li><a href="/music"     data-en="Songs"  data-id="Lagu">Songs</a></li>
+          <li><a href="/merch"     data-en="Merch"  data-id="Merch">Merch</a></li>
+          <li><a href="/postcards" data-en="Blog"   data-id="Blog">Blog</a></li>
+          <li><a href="/news"      data-en="Press"  data-id="Pers">Press</a></li>
+          <li><a href="/about"     data-en="About"  data-id="Tentang">About</a></li>
+        </ul>
+      </nav>
+    </div>
+    <div class="h-foot__bottom">
+      <p>© <span class="h-foot__year">2026</span> sepuluhduaempat</p>
+      <p>
+        <a href="PRIVACY_URL" data-en="Privacy policy" data-id="Kebijakan privasi">Privacy policy</a>
+        <button type="button" class="h-foot__sign" data-open-guestbook data-en="Sign the guest book" data-id="Isi buku tamu">Sign the guest book</button>
+      </p>
+    </div>
+  </div>
+</footer>
+
+<style>
+.h-foot{padding-top:clamp(56px,8vw,96px);padding-bottom:32px}
+.h-foot a,.h-foot button{color:inherit}
+.h-foot__mark{color:var(--h-heading)}
+.h-foot__top{display:flex;justify-content:space-between;align-items:flex-end;gap:32px;flex-wrap:wrap;padding-bottom:40px;border-bottom:1px solid var(--h-line)}
+.h-foot__mark{margin:0;font:var(--h-hs) var(--h-hw) clamp(72px,14vw,200px)/.8 var(--h-font-heading);letter-spacing:var(--h-hls)}
+.h-foot__nav{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:8px 28px}
+.h-foot__nav a{text-decoration:none;font-size:16px;font-weight:500}
+.h-foot__nav a:hover{text-decoration:underline;text-underline-offset:4px}
+.h-foot__bottom{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;padding-top:20px;font-size:14px;opacity:.75}
+.h-foot__bottom p{margin:0}
+.h-foot__bottom p:last-child{display:flex;gap:20px;align-items:center}
+.h-foot__sign{background:none;border:0;padding:0;font:inherit;cursor:pointer;text-decoration:underline;text-underline-offset:4px}
+</style>
+
+<script>
+(function(){
+  var root = document.getElementById("h-footer");
+  if (!root || !window.H1024) return;
+  root.querySelector(".h-foot__year").textContent = new Date().getFullYear();
+  H1024.applyStatic(root);
+})();
+</script>
+</div></section>
+<!-- ============================================================
+  HINDIA 1024 — 01 HEADER BAR + WINDOW FRAME + DROP MENU + EN/ID TOGGLE
+  Where: Settings → Advanced → Code Injection → FOOTER
+  (Squarespace headers can't hold code blocks, so this is injected
+   and moved to the top of <body>. It hides the native header.)
+  Multi-page: the menu links to separate pages (/music, /videos, ...).
+  Look: the logo sits in a tab that hangs from the top bar into the
+  rounded "window"; the menu runs along the top right. On phones the
+  menu collapses into the Menu button. Colours/fonts: :root in 00.
+
+  EDIT: the logo <img> src (optional), and the 1024 link.
+  Tip: upload logos as SVG/PNG via any image block, copy the
+  image URL (images.squarespace-cdn.com/...), paste below.
+============================================================ -->
+<header id="h-header" class="h-hdr h-themed">
+  <a class="h-hdr__tab" href="/" aria-label="Hindia — home">
+    <!-- <img src="LOGO_HINDIA_URL" alt=""> -->
+    <span class="h-hdr__mark">hindia</span>
+  </a>
+
+  <nav class="h-hdr__nav" aria-label="Site">
+    <a href="/music"     data-en="Music"     data-id="Musik">Music</a>
+    <a href="/videos"    data-en="Videos"    data-id="Video">Videos</a>
+    <a href="/shows"     data-en="Shows"     data-id="Manggung">Shows</a>
+    <a href="/merch"     data-en="Merch"     data-id="Merch">Merch</a>
+    <a href="/postcards" data-en="Postcards" data-id="Surat dari">Postcards</a>
+    <a href="/news"      data-en="News"      data-id="Berita">News</a>
+    <a href="/about"     data-en="About"     data-id="Tentang">About</a>
+  </nav>
+
+  <div class="h-hdr__right">
+    <a class="h-hdr__1024" href="https://www.instagram.com/sepuluhduaempat/" target="_blank" rel="noopener" aria-label="1024 (sepuluhduaempat)">
+      <!-- <img src="LOGO_1024_URL" alt=""> -->
+      <span>1024</span>
+    </a>
+    <div class="h-lang" role="group" aria-label="Language">
+      <button type="button" data-lang="en" aria-pressed="false">EN</button>
+      <button type="button" data-lang="id" aria-pressed="false">ID</button>
+    </div>
+    <button type="button" class="h-hdr__menu" aria-expanded="false" aria-controls="h-menu">
+      <span data-en="Menu" data-id="Menu">Menu</span>
+    </button>
+  </div>
+</header>
+<div class="h-frame" aria-hidden="true"></div>
+
+<div id="h-menu" class="h-menu h-themed" hidden>
+  <nav aria-label="Site (menu)">
+    <ol class="h-menu__list">
+      <li><a href="/music"     data-en="Music"        data-id="Musik">Music</a></li>
+      <li><a href="/videos"    data-en="Videos"       data-id="Video">Videos</a></li>
+      <li><a href="/shows"     data-en="Shows"        data-id="Jadwal manggung">Shows</a></li>
+      <li><a href="/merch"     data-en="Merch"        data-id="Merchandise">Merch</a></li>
+      <li><a href="/postcards" data-en="Postcards"    data-id="Surat dari">Postcards</a></li>
+      <li><a href="/news"      data-en="News & press" data-id="Berita & pers">News &amp; press</a></li>
+      <li><a href="/about"     data-en="About"        data-id="Tentang">About</a></li>
+    </ol>
+  </nav>
+  <div class="h-menu__foot">
+    <button type="button" class="h-btn" data-open-guestbook data-en="Sign the guest book" data-id="Isi buku tamu">Sign the guest book</button>
+    <button type="button" class="h-menu__close" data-en="Close" data-id="Tutup">Close</button>
+  </div>
+</div>
+
+<style>
+.h-hdr{
+  position:fixed;inset:0 0 auto 0;z-index:999;height:var(--h-header);
+  display:flex;align-items:center;gap:24px;
+  padding-right:calc(var(--hx-fw) + 14px);
+  background:var(--hx-frame);color:var(--hx-heading);
+  font:500 13px/1 var(--hx-font);letter-spacing:.06em;text-transform:uppercase;
+}
+.h-hdr a{color:inherit;text-decoration:none}
+
+/* logo tab hanging into the window, with concave corners on both sides */
+.h-hdr__tab{
+  align-self:flex-start;position:relative;flex-shrink:0;
+  height:calc(var(--h-header) + var(--hx-tab-drop));
+  display:flex;align-items:center;
+  padding:0 26px 0 calc(var(--hx-fw) + 18px);
+  background:var(--hx-frame);border-bottom-right-radius:var(--hx-fr);
+}
+.h-hdr__tab::before,.h-hdr__tab::after{
+  content:"";position:absolute;width:var(--hx-fr);height:var(--hx-fr);
+  background:radial-gradient(circle at 100% 100%,transparent calc(var(--hx-fr) - .5px),var(--hx-frame) var(--hx-fr));
+}
+.h-hdr__tab::before{left:var(--hx-fw);top:100%}
+.h-hdr__tab::after{left:100%;top:var(--h-header)}
+.h-hdr__tab img,.h-hdr__tab svg{height:30px;width:auto;display:block}
+.h-hdr__mark{font:800 30px/1 var(--hx-font);letter-spacing:-.01em;text-transform:none}
+
+.h-hdr__nav{display:flex;gap:clamp(14px,1.8vw,26px);margin-left:auto}
+.h-hdr__nav a{padding:6px 0;border-bottom:2px solid transparent;transition:border-color .2s}
+.h-hdr__nav a:hover,.h-hdr__nav a[aria-current="page"]{border-bottom-color:currentColor}
+.h-hdr__right{display:flex;align-items:center;gap:16px}
+.h-hdr__1024{font-weight:700}
+.h-hdr__1024 img{height:18px;width:auto;display:block}
+.h-lang{display:flex;border:1px solid color-mix(in srgb,currentColor 35%,transparent);border-radius:999px;padding:2px}
+.h-lang button{
+  font:inherit;font-size:11px;font-weight:700;color:inherit;background:none;border:0;
+  padding:6px 9px;border-radius:999px;cursor:pointer;
+}
+.h-lang button[aria-pressed="true"]{background:var(--hx-heading);color:var(--hx-frame)}
+.h-hdr__menu{
+  display:none;font:inherit;font-weight:700;color:inherit;cursor:pointer;
+  background:none;border:1px solid color-mix(in srgb,currentColor 35%,transparent);border-radius:999px;padding:9px 14px;
+}
+
+.h-menu{
+  position:fixed;inset:0;z-index:1000;color:var(--hx-heading);
+  /* frosted glass: the page shows through, blurred */
+  background:color-mix(in srgb,var(--hx-frame) 78%,transparent);-webkit-backdrop-filter:blur(15px);backdrop-filter:blur(15px);
+  display:flex;flex-direction:column;justify-content:space-between;
+  padding:calc(var(--h-header) + var(--hx-tab-drop) + 24px) var(--h-gutter) 40px;overflow-y:auto;
+  font-family:var(--hx-font);
+}
+.h-menu[hidden]{display:none}
+.h-menu__list{list-style:none;margin:0;padding:0}
+.h-menu__list a{
+  display:block;color:inherit;text-decoration:none;text-transform:uppercase;
+  font:800 clamp(36px,9vw,72px)/1.04 var(--hx-font);letter-spacing:-.01em;padding:4px 0;
+}
+.h-menu__list a:hover,.h-menu__list a[aria-current="page"]{color:var(--hx-accent)}
+.h-menu__foot{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-top:40px;flex-wrap:wrap}
+.h-menu__close{background:none;border:0;color:inherit;font:700 13px/1 var(--hx-font);letter-spacing:.06em;text-transform:uppercase;cursor:pointer;text-decoration:underline;text-underline-offset:4px}
+body.h-menu-open{overflow:hidden}
+
+@media (max-width:1020px){
+  .h-hdr__nav{display:none}
+  .h-hdr__right{margin-left:auto}
+  .h-hdr__menu{display:block}
+}
+@media (max-width:640px){
+  .h-hdr__mark{font-size:24px}
+  .h-hdr__tab{padding-right:18px}
+  .h-hdr__right{gap:10px}
+  .h-hdr__1024{display:none}
+}
+</style>
+
+<script>/* LOCAL PREVIEW ONLY: /music -> music.html */
+document.querySelectorAll('a[href^="/"]:not([href^="//"])').forEach(function(a){
+  var h = a.getAttribute("href"), i = h.indexOf("#"), path = i < 0 ? h : h.slice(0, i), hash = i < 0 ? "" : h.slice(i);
+  a.setAttribute("href", (path === "/" ? "index" : path.slice(1)) + ".html" + hash);
+});
+</script>
+<script>
+(function(){
+  var hdr = document.getElementById("h-header");
+  var menu = document.getElementById("h-menu");
+  var frame = document.querySelector(".h-frame");
+  if (!hdr || !window.H1024) return;
+  document.body.prepend(frame);
+  document.body.prepend(menu);
+  document.body.prepend(hdr);
+
+  /* loader (drawn by CSS in 00): fade it once the font is in, without waiting
+     for embeds and images, so moving between pages stays quick */
+  function ready(){ document.body.classList.add("h-ready"); }
+  if (document.fonts) document.fonts.ready.then(ready); else ready();
+
+  /* mark the page you're on */
+  var here = location.pathname.replace(/\/$/, "");
+  [hdr, menu].forEach(function(root){
+    root.querySelectorAll(".h-hdr__nav a, .h-menu__list a").forEach(function(a){
+      if (a.pathname.replace(/\/$/, "") === here) a.setAttribute("aria-current", "page");
+    });
+  });
+
+  /* language toggle */
+  var langBtns = hdr.querySelectorAll("[data-lang]");
+  function syncLang(l){
+    langBtns.forEach(function(b){ b.setAttribute("aria-pressed", String(b.getAttribute("data-lang") === l)); });
+  }
+  langBtns.forEach(function(b){
+    b.addEventListener("click", function(){ H1024.setLang(b.getAttribute("data-lang")); });
+  });
+  H1024.onLang(syncLang);
+  syncLang(H1024.lang);
+
+  /* drop menu (phones / narrow screens) */
+  var toggle = hdr.querySelector(".h-hdr__menu");
+  function openMenu(){
+    menu.hidden = false;
+    toggle.setAttribute("aria-expanded","true");
+    document.body.classList.add("h-menu-open");
+    menu.querySelector("a").focus();
+  }
+  function closeMenu(){
+    menu.hidden = true;
+    toggle.setAttribute("aria-expanded","false");
+    document.body.classList.remove("h-menu-open");
+  }
+  toggle.addEventListener("click", function(){ menu.hidden ? openMenu() : closeMenu(); });
+  menu.querySelector(".h-menu__close").addEventListener("click", function(){ closeMenu(); toggle.focus(); });
+  menu.addEventListener("click", function(e){ if (e.target.closest("a, [data-open-guestbook]")) closeMenu(); });
+  document.addEventListener("keydown", function(e){ if (e.key === "Escape" && !menu.hidden){ closeMenu(); toggle.focus(); } });
+
+  H1024.applyStatic(hdr);
+  H1024.applyStatic(menu);
+})();
+</script>
+<!-- ============================================================
+  HINDIA 1024 — 01b GUEST BOOK POP-UP (site-wide)
+  Where: Settings → Advanced → Code Injection → FOOTER, pasted right
+  after 01. It loads on every page, so every "Sign the guest book"
+  button works, and any page + #guestbook (e.g. hindia1024.com/#guestbook)
+  opens it directly — good for IG bio links.
+  EDIT: GUESTBOOK_ENDPOINT (Google Apps Script web app URL,
+  see guestbook-apps-script.gs) and PRIVACY_URL.
+============================================================ -->
+<dialog class="h-guest h-themed" id="h-guestbook" aria-labelledby="h-guest-title">
+  <form class="h-guest__card" novalidate>
+    <button type="button" class="h-guest__x" data-close
+            data-en-aria="Close guest book" data-id-aria="Tutup buku tamu">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="1.6"/></svg>
+    </button>
+
+    <div class="h-guest__top">
+      <h2 id="h-guest-title" class="h-guest__title" data-en="Hindia guest book" data-id="Buku tamu Hindia">Hindia guest book</h2>
+      <p class="h-guest__date"></p>
+    </div>
+
+    <div class="h-guest__fields">
+      <label class="h-guest__row">
+        <span data-en="Your name" data-id="Nama kamu">Your name</span>
+        <input name="name" type="text" autocomplete="name" required maxlength="80">
+      </label>
+      <label class="h-guest__row">
+        <span data-en="Email" data-id="Email">Email</span>
+        <input name="email" type="email" autocomplete="email" inputmode="email" required maxlength="120">
+      </label>
+      <!-- honeypot: bots fill it, people never see it -->
+      <label class="h-sr" aria-hidden="true">Website<input name="website" tabindex="-1" autocomplete="off"></label>
+    </div>
+
+    <label class="h-guest__consent">
+      <input name="consent" type="checkbox" required>
+      <span>
+        <span data-en="I agree to receive emails from 1024 about Hindia and understand I can unsubscribe at any time."
+              data-id="Saya setuju menerima email dari 1024 tentang Hindia dan bisa berhenti berlangganan kapan saja.">I agree to receive emails from 1024 about Hindia and understand I can unsubscribe at any time.</span>
+        <a class="h-link" href="PRIVACY_URL" target="_blank" rel="noopener" data-en="Privacy policy" data-id="Kebijakan privasi">Privacy policy</a>
+      </span>
+    </label>
+
+    <p class="h-guest__status" role="status" aria-live="polite"></p>
+
+    <button type="submit" class="h-btn h-guest__submit" data-en="Sign the guest book" data-id="Isi buku tamu">Sign the guest book</button>
+  </form>
+</dialog>
+
+<style>
+/* ---- Guest book pop-up: a ruled page ---- */
+.h-guest{border:0;padding:0;background:transparent;max-width:min(560px,calc(100vw - 24px));width:100%;color:var(--h-text)}
+.h-guest::backdrop{background:rgba(0,0,0,.45);-webkit-backdrop-filter:blur(15px);backdrop-filter:blur(15px)}
+.h-guest__card{
+  position:relative;background:var(--h-bg);font-family:var(--h-font-body);
+  padding:clamp(28px,5vw,48px);border-radius:var(--hx-fr);border:1px solid var(--h-line);
+  box-shadow:0 30px 80px -20px rgba(0,0,0,.5);
+}
+.h-guest__x{position:absolute;top:14px;right:14px;width:40px;height:40px;background:none;border:0;cursor:pointer;color:var(--h-heading)}
+.h-guest__x svg{width:20px;height:20px}
+.h-guest__top{border-bottom:2px solid var(--h-heading);padding-bottom:14px;margin-bottom:8px}
+.h-guest__title{font:var(--h-hs) var(--h-hw) clamp(32px,5vw,44px)/1 var(--h-font-heading);letter-spacing:var(--h-hls);margin:0}
+.h-guest__date{margin:8px 0 0;font-size:14px;color:var(--h-muted)}
+.h-guest__row{display:grid;grid-template-columns:7.5em 1fr;align-items:end;gap:12px;border-bottom:1px solid var(--h-line);padding:18px 0 8px}
+.h-guest__row span{font-size:14px;color:var(--h-muted);padding-bottom:4px}
+.h-guest__row input{
+  border:0;background:transparent;font:var(--h-bw) 20px/1.3 var(--h-font-body);color:var(--h-heading);
+  padding:4px 0;width:100%;min-width:0;border-radius:0;
+}
+.h-guest__row input:focus{outline:none}
+.h-guest__row:focus-within{border-bottom-color:var(--h-accent);box-shadow:0 1px 0 var(--h-accent)}
+.h-guest__consent{display:flex;gap:12px;align-items:flex-start;margin:24px 0 8px;font-size:14px;line-height:1.5;color:var(--h-muted)}
+.h-guest__consent input{width:18px;height:18px;margin:2px 0 0;accent-color:var(--h-btn-bg);flex-shrink:0}
+.h-guest__status{min-height:1.5em;font-size:14px;margin:8px 0 16px}
+.h-guest__status[data-tone="error"]{color:var(--h-accent);font-weight:600}
+.h-guest__status[data-tone="ok"]{font:var(--h-hs) var(--h-hw) 20px/1.35 var(--h-font-heading);color:var(--h-heading)}
+.h-guest__submit{width:100%}
+.h-guest__submit[disabled]{opacity:.5;cursor:wait}
+@media (max-width:480px){.h-guest__row{grid-template-columns:1fr;gap:2px}}
+</style>
+
+<script>
+(function(){
+  /* ---------- CONFIG ---------- */
+  var GUESTBOOK_ENDPOINT = "https://script.google.com/macros/s/XXXXXXXX/exec";
+
+  var dlg = document.getElementById("h-guestbook");
+  if (!dlg || !window.H1024) return;
+  document.body.appendChild(dlg); /* keep the dialog outside Squarespace's block wrappers */
+
+  /* guest book */
+  var form = dlg.querySelector("form");
+  var status = dlg.querySelector(".h-guest__status");
+  var submit = dlg.querySelector(".h-guest__submit");
+  var dateEl = dlg.querySelector(".h-guest__date");
+  var MSG = {
+    name:   {en:"Write your name on the first line.", id:"Tulis nama kamu di baris pertama."},
+    email:  {en:"That email doesn't look complete — check for a missing @ or domain.", id:"Email belum lengkap — cek tanda @ atau domainnya."},
+    consent:{en:"Tick the box so we're allowed to email you.", id:"Centang kotak persetujuan supaya kami boleh mengirim email."},
+    fail:   {en:"The guest book didn't save. Check your connection and sign again.", id:"Buku tamu belum tersimpan. Cek koneksi kamu lalu coba lagi."},
+    ok:     {en:"Signed. Watch your inbox for news from 1024.", id:"Sudah tercatat. Tunggu kabar dari 1024 di inbox kamu."},
+    signed: {en:"Signed on ", id:"Ditandatangani "}
+  };
+  function paintDate(){
+    dateEl.textContent = H1024.t(MSG.signed) + new Date().toLocaleDateString(H1024.locale(), {day:"numeric", month:"long", year:"numeric"});
+  }
+  function say(key, tone){ status.textContent = key ? H1024.t(MSG[key]) : ""; status.setAttribute("data-tone", tone || ""); }
+
+  function open(){
+    paintDate(); say("");
+    if (typeof dlg.showModal === "function") dlg.showModal(); else dlg.setAttribute("open","");
+    form.querySelector('[name="name"]').focus();
+  }
+  function close(){ if (dlg.open) dlg.close(); }
+
+  document.addEventListener("click", function(e){
+    if (e.target.closest("[data-open-guestbook]")) { e.preventDefault(); open(); }
+  });
+  dlg.querySelector("[data-close]").addEventListener("click", close);
+  dlg.addEventListener("click", function(e){ if (e.target === dlg) close(); });
+  /* open directly with hindia1024.com/#guestbook (useful for IG bio links) */
+  if (location.hash === "#guestbook") setTimeout(open, 400);
+
+  form.addEventListener("submit", function(e){
+    e.preventDefault();
+    var fd = new FormData(form);
+    var name = String(fd.get("name") || "").trim();
+    var email = String(fd.get("email") || "").trim();
+    if (!name) return say("name","error");
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) return say("email","error");
+    if (!fd.get("consent")) return say("consent","error");
+
+    submit.disabled = true; say("");
+    var body = new URLSearchParams({
+      name: name, email: email, consent: "yes",
+      website: String(fd.get("website") || ""),
+      lang: H1024.lang, source: location.pathname + location.search
+    });
+    fetch(GUESTBOOK_ENDPOINT, { method:"POST", body: body })
+      .then(function(r){ return r.json(); })
+      /* say "Signed" only when guestbook-apps-script.gs confirms the row was saved */
+      .then(function(d){ if (!d || d.ok !== true) throw new Error("not saved"); form.reset(); say("ok","ok"); })
+      .catch(function(){ say("fail","error"); })
+      .finally(function(){ submit.disabled = false; });
+  });
+
+  H1024.onLang(function(){ paintDate(); if (status.textContent) status.textContent = ""; });
+  H1024.applyStatic(dlg);
+})();
+</script>
+<!-- ============================================================
+  HINDIA 1024 — 01c LIQUID BACKGROUND (site-wide)
+  Where: Settings → Advanced → Code Injection → FOOTER, pasted after 01b.
+  A full-window background that slowly ripples like liquid (WebGL).
+   - Home: uses the home video from 02 automatically.
+   - Other pages: the image you set below. A page left "" keeps the plain dark background.
+  Upload images in Squarespace (any image block → copy the image address), or as a file.
+  Image sizes: desktop 2560×1440, under ~500 KB; phone (optional) 1080×1920, under ~250 KB.
+  dim: how dark the background is drawn (1 = as is, 0.4 = darker so text reads well).
+  Falls back to the still image (or the plain video) when the browser has no WebGL
+  or the visitor asked for reduced motion.
+============================================================ -->
+<script>
+(function(){
+  /* ---------- CONFIG: one image per page ---------- */
+  var BACKGROUNDS = {
+    "/music":     { img: "test-bg.jpg", mobile: "" },
+    "/videos":    { img: "", mobile: "" },
+    "/shows":     { img: "", mobile: "" },
+    "/merch":     { img: "", mobile: "" },
+    "/postcards": { img: "", mobile: "" },
+    "/news":      { img: "", mobile: "" },
+    "/about":     { img: "", mobile: "" }
+  };
+  var DIM_HOME = 1, DIM_PAGES = 0.4;
+  var AMOUNT = 0.012; /* ripple strength; 0.006 calmer, 0.02 wilder */
+
+  var phone = matchMedia("(max-width:640px)").matches;
+  var still = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var root = document.documentElement;
+  var video = document.querySelector("#home video");
+  var cfg = BACKGROUNDS[location.pathname.replace(/(\/|\.html)$/, "")] || {};
+  var img = (phone && cfg.mobile) || cfg.img;
+  if (!video && !img) return;
+  var dim = video ? DIM_HOME : DIM_PAGES;
+
+  var layer = document.createElement("div");
+  layer.className = "h-liquid";
+  layer.setAttribute("aria-hidden", "true");
+  if (img) { /* the still fallback, also what shows until the canvas has drawn */
+    var shade = "rgba(0,0,0," + (1 - dim) + ")";
+    layer.style.backgroundImage = "linear-gradient(" + shade + "," + shade + '),url("' + img.replace(/"/g, "%22") + '")';
+    root.classList.add("h-bgfx");
+  }
+  document.body.prepend(layer);
+  if (still) return;
+
+  var canvas = document.createElement("canvas");
+  var gl = canvas.getContext("webgl", { alpha: false, antialias: false, powerPreference: "low-power" });
+  if (!gl) return;
+
+  function sh(type, src){
+    var s = gl.createShader(type); gl.shaderSource(s, src); gl.compileShader(s); return s;
+  }
+  var prog = gl.createProgram();
+  gl.attachShader(prog, sh(gl.VERTEX_SHADER,
+    "attribute vec2 p;varying vec2 v;void main(){v=p*.5+.5;gl_Position=vec4(p,0.,1.);}"));
+  gl.attachShader(prog, sh(gl.FRAGMENT_SHADER, [
+    "precision mediump float;",
+    "uniform sampler2D tex;uniform vec2 res,size;uniform float time,dim,amp;varying vec2 v;",
+    "void main(){",
+    /* slow, layered sine waves push the picture around like liquid */
+    "  vec2 q=v*3.;float t=time*.15;",
+    "  vec2 d=vec2(sin(q.y*1.7+t*1.3+sin(q.x*2.3+t)),cos(q.x*1.9-t*1.1+cos(q.y*2.1-t*.7)));",
+    "  vec2 uv=v+d*amp;",
+    /* object-fit: cover */
+    "  float r=(res.x/res.y)/(size.x/size.y);",
+    "  uv=r>1.?vec2(uv.x,(uv.y-.5)/r+.5):vec2((uv.x-.5)*r+.5,uv.y);",
+    "  gl_FragColor=vec4(texture2D(tex,uv).rgb*dim,1.);",
+    "}"].join("\n")));
+  gl.linkProgram(prog);
+  if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) return;
+  gl.useProgram(prog);
+
+  gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1, 1,-1, -1,1, 1,1]), gl.STATIC_DRAW);
+  var loc = gl.getAttribLocation(prog, "p");
+  gl.enableVertexAttribArray(loc);
+  gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+
+  gl.bindTexture(gl.TEXTURE_2D, gl.createTexture());
+  gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+  [gl.TEXTURE_WRAP_S, gl.TEXTURE_WRAP_T].forEach(function(k){ gl.texParameteri(gl.TEXTURE_2D, k, gl.CLAMP_TO_EDGE); });
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+
+  var U = {};
+  ["res", "size", "time", "dim", "amp"].forEach(function(n){ U[n] = gl.getUniformLocation(prog, n); });
+  gl.uniform1f(U.dim, dim);
+  gl.uniform1f(U.amp, AMOUNT);
+
+  /* phones draw at lower resolution and 30 fps; the ripple hides the softness */
+  var scale = Math.min(devicePixelRatio || 1, phone ? 1 : 1.5);
+  function resize(){
+    canvas.width = Math.round(innerWidth * scale);
+    canvas.height = Math.round(innerHeight * scale);
+    gl.viewport(0, 0, canvas.width, canvas.height);
+    gl.uniform2f(U.res, canvas.width, canvas.height);
+  }
+  addEventListener("resize", resize);
+  resize();
+
+  var source = video || new Image(), ready = false, lastFrame = -1, n = 0;
+  function upload(){
+    try { gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, source); }
+    catch (e) { stop(); return false; } /* the host didn't allow cross-site use: keep the fallback */
+    if (!ready) {
+      ready = true;
+      gl.uniform2f(U.size, video ? video.videoWidth : source.naturalWidth, video ? video.videoHeight : source.naturalHeight);
+      layer.appendChild(canvas);
+      root.classList.add("h-bgfx", "h-liquid-on");
+    }
+    return true;
+  }
+  function stop(){ cancelAnimationFrame(raf); canvas.remove(); root.classList.remove("h-liquid-on"); }
+  canvas.addEventListener("webglcontextlost", stop);
+
+  var raf;
+  function frame(ms){
+    raf = requestAnimationFrame(frame); /* browsers stop this while the tab is hidden */
+    if (phone && (n++ & 1)) return;
+    if (video) {
+      if (video.readyState < 2) return;
+      if (video.currentTime !== lastFrame) { lastFrame = video.currentTime; if (!upload()) return; }
+    }
+    if (!ready) return;
+    gl.uniform1f(U.time, ms / 1000);
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+  }
+
+  if (video) raf = requestAnimationFrame(frame);
+  else {
+    source.crossOrigin = "anonymous";
+    source.onload = function(){ if (upload()) raf = requestAnimationFrame(frame); };
+    source.src = img;
+  }
+})();
+</script>
+
+<style>
+.h-liquid{position:fixed;inset:0;z-index:-1;pointer-events:none;background:#000 center/cover no-repeat}
+.h-liquid canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+/* let the background show through the kit's sections and Squarespace's own section backgrounds */
+.h-bgfx{background:var(--hx-bg)}
+.h-bgfx body,.h-bgfx .h-sec:not(.h-foot),
+.h-bgfx .page-section:has(.h-sec:not(.h-foot)){background:transparent!important}
+.h-bgfx .page-section:has(.h-sec:not(.h-foot)) .section-background{display:none}
+/* the canvas now draws the home video, so hide the plain copy (it keeps playing) */
+.h-liquid-on #home video{opacity:0}
+</style>
+</body></html>

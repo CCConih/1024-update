@@ -1,0 +1,149 @@
+<!-- ============================================================
+  HINDIA 1024 — 01c LIQUID BACKGROUND (site-wide)
+  Where: Settings → Advanced → Code Injection → FOOTER, pasted after 01b.
+  A full-window background that slowly ripples like liquid (WebGL).
+   - Home: uses the home video from 02 automatically.
+   - Other pages: the image you set below. A page left "" keeps the plain dark background.
+  Upload images in Squarespace (any image block → copy the image address), or as a file.
+  Image sizes: desktop 2560×1440, under ~500 KB; phone (optional) 1080×1920, under ~250 KB.
+  dim: how dark the background is drawn (1 = as is, 0.4 = darker so text reads well).
+  Falls back to the still image (or the plain video) when the browser has no WebGL
+  or the visitor asked for reduced motion.
+============================================================ -->
+<script>
+(function(){
+  /* ---------- CONFIG: one image per page ---------- */
+  var BACKGROUNDS = {
+    "/music":     { img: "", mobile: "" },
+    "/videos":    { img: "", mobile: "" },
+    "/shows":     { img: "", mobile: "" },
+    "/merch":     { img: "", mobile: "" },
+    "/postcards": { img: "", mobile: "" },
+    "/news":      { img: "", mobile: "" },
+    "/about":     { img: "", mobile: "" }
+  };
+  var DIM_HOME = 1, DIM_PAGES = 0.4;
+  var AMOUNT = 0.012; /* ripple strength; 0.006 calmer, 0.02 wilder */
+
+  var phone = matchMedia("(max-width:640px)").matches;
+  var still = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var root = document.documentElement;
+  var video = document.querySelector("#home video");
+  var cfg = BACKGROUNDS[location.pathname.replace(/\/$/, "")] || {};
+  var img = (phone && cfg.mobile) || cfg.img;
+  if (!video && !img) return;
+  var dim = video ? DIM_HOME : DIM_PAGES;
+
+  var layer = document.createElement("div");
+  layer.className = "h-liquid";
+  layer.setAttribute("aria-hidden", "true");
+  if (img) { /* the still fallback, also what shows until the canvas has drawn */
+    var shade = "rgba(0,0,0," + (1 - dim) + ")";
+    layer.style.backgroundImage = "linear-gradient(" + shade + "," + shade + '),url("' + img.replace(/"/g, "%22") + '")';
+    root.classList.add("h-bgfx");
+  }
+  document.body.prepend(layer);
+  if (still) return;
+
+  var canvas = document.createElement("canvas");
+  var gl = canvas.getContext("webgl", { alpha: false, antialias: false, powerPreference: "low-power" });
+  if (!gl) return;
+
+  function sh(type, src){
+    var s = gl.createShader(type); gl.shaderSource(s, src); gl.compileShader(s); return s;
+  }
+  var prog = gl.createProgram();
+  gl.attachShader(prog, sh(gl.VERTEX_SHADER,
+    "attribute vec2 p;varying vec2 v;void main(){v=p*.5+.5;gl_Position=vec4(p,0.,1.);}"));
+  gl.attachShader(prog, sh(gl.FRAGMENT_SHADER, [
+    "precision mediump float;",
+    "uniform sampler2D tex;uniform vec2 res,size;uniform float time,dim,amp;varying vec2 v;",
+    "void main(){",
+    /* slow, layered sine waves push the picture around like liquid */
+    "  vec2 q=v*3.;float t=time*.15;",
+    "  vec2 d=vec2(sin(q.y*1.7+t*1.3+sin(q.x*2.3+t)),cos(q.x*1.9-t*1.1+cos(q.y*2.1-t*.7)));",
+    "  vec2 uv=v+d*amp;",
+    /* object-fit: cover */
+    "  float r=(res.x/res.y)/(size.x/size.y);",
+    "  uv=r>1.?vec2(uv.x,(uv.y-.5)/r+.5):vec2((uv.x-.5)*r+.5,uv.y);",
+    "  gl_FragColor=vec4(texture2D(tex,uv).rgb*dim,1.);",
+    "}"].join("\n")));
+  gl.linkProgram(prog);
+  if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) return;
+  gl.useProgram(prog);
+
+  gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1, 1,-1, -1,1, 1,1]), gl.STATIC_DRAW);
+  var loc = gl.getAttribLocation(prog, "p");
+  gl.enableVertexAttribArray(loc);
+  gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+
+  gl.bindTexture(gl.TEXTURE_2D, gl.createTexture());
+  gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+  [gl.TEXTURE_WRAP_S, gl.TEXTURE_WRAP_T].forEach(function(k){ gl.texParameteri(gl.TEXTURE_2D, k, gl.CLAMP_TO_EDGE); });
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+
+  var U = {};
+  ["res", "size", "time", "dim", "amp"].forEach(function(n){ U[n] = gl.getUniformLocation(prog, n); });
+  gl.uniform1f(U.dim, dim);
+  gl.uniform1f(U.amp, AMOUNT);
+
+  /* phones draw at lower resolution and 30 fps; the ripple hides the softness */
+  var scale = Math.min(devicePixelRatio || 1, phone ? 1 : 1.5);
+  function resize(){
+    canvas.width = Math.round(innerWidth * scale);
+    canvas.height = Math.round(innerHeight * scale);
+    gl.viewport(0, 0, canvas.width, canvas.height);
+    gl.uniform2f(U.res, canvas.width, canvas.height);
+  }
+  addEventListener("resize", resize);
+  resize();
+
+  var source = video || new Image(), ready = false, lastFrame = -1, n = 0;
+  function upload(){
+    try { gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, source); }
+    catch (e) { stop(); return false; } /* the host didn't allow cross-site use: keep the fallback */
+    if (!ready) {
+      ready = true;
+      gl.uniform2f(U.size, video ? video.videoWidth : source.naturalWidth, video ? video.videoHeight : source.naturalHeight);
+      layer.appendChild(canvas);
+      root.classList.add("h-bgfx", "h-liquid-on");
+    }
+    return true;
+  }
+  function stop(){ cancelAnimationFrame(raf); canvas.remove(); root.classList.remove("h-liquid-on"); }
+  canvas.addEventListener("webglcontextlost", stop);
+
+  var raf;
+  function frame(ms){
+    raf = requestAnimationFrame(frame); /* browsers stop this while the tab is hidden */
+    if (phone && (n++ & 1)) return;
+    if (video) {
+      if (video.readyState < 2) return;
+      if (video.currentTime !== lastFrame) { lastFrame = video.currentTime; if (!upload()) return; }
+    }
+    if (!ready) return;
+    gl.uniform1f(U.time, ms / 1000);
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+  }
+
+  if (video) raf = requestAnimationFrame(frame);
+  else {
+    source.crossOrigin = "anonymous";
+    source.onload = function(){ if (upload()) raf = requestAnimationFrame(frame); };
+    source.src = img;
+  }
+})();
+</script>
+
+<style>
+.h-liquid{position:fixed;inset:0;z-index:-1;pointer-events:none;background:#000 center/cover no-repeat}
+.h-liquid canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+/* let the background show through the kit's sections and Squarespace's own section backgrounds */
+.h-bgfx{background:var(--hx-bg)}
+.h-bgfx body,.h-bgfx .h-sec:not(.h-foot),
+.h-bgfx .page-section:has(.h-sec:not(.h-foot)){background:transparent!important}
+.h-bgfx .page-section:has(.h-sec:not(.h-foot)) .section-background{display:none}
+/* the canvas now draws the home video, so hide the plain copy (it keeps playing) */
+.h-liquid-on #home video{opacity:0}
+</style>

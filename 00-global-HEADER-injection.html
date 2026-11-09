@@ -1,0 +1,287 @@
+<!-- ============================================================
+  HINDIA 1024 — 00 GLOBAL
+  Where: Settings → Advanced → Code Injection → HEADER
+  Load this first. Every section block depends on it.
+  LOOK: dark "framed window" skin. Every colour, font and size of the
+  skin is set in the :root block below — change them there, nowhere else.
+============================================================ -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&display=swap">
+<style>
+/* ------------------------------------------------------------------
+   SKIN TOKENS — the whole look lives here.
+------------------------------------------------------------------- */
+:root{
+  --hx-frame:   #242529;  /* window frame, header bar, loader */
+  --hx-bg:      #0d0e10;  /* inside the window */
+  --hx-surface: #18191c;  /* cards, calendar, press kit */
+  --hx-text:    #c9c8c3;
+  --hx-heading: #f3f1ec;
+  --hx-accent:  #d9573b;  /* Listen-now pill, live dates, links */
+  --hx-font: "Archivo", "Helvetica Neue", Arial, sans-serif;
+  --hx-fw: 10px;          /* frame thickness (sides + bottom) */
+  --hx-fr: 22px;          /* window corner radius */
+  --hx-r:  14px;          /* card / media corner radius */
+  --hx-tab-drop: 26px;    /* how far the logo tab hangs into the window */
+
+  --h-max:1240px;
+  --h-gutter:clamp(20px,5vw,64px);
+  --h-header:58px;
+}
+@media (max-width:640px){
+  :root{--hx-fw:6px;--hx-fr:16px;--hx-tab-drop:12px;--h-header:52px}
+}
+.h-sec,.h-themed{
+  --h-bg:      var(--hx-bg);
+  --h-text:    var(--hx-text);
+  --h-heading: var(--hx-heading);
+  --h-accent:  var(--hx-accent);
+  --h-btn-bg:  var(--hx-heading);
+  --h-btn-text:var(--hx-bg);
+  --h-muted:       color-mix(in srgb, var(--h-text) 68%, var(--h-bg));
+  --h-bg-2:        var(--hx-surface);
+  --h-accent-soft: color-mix(in srgb, var(--h-accent) 22%, var(--h-bg));
+  --h-line:        color-mix(in srgb, var(--h-text) 18%, transparent);
+
+  --h-font-heading: var(--hx-font);
+  --h-font-body:    var(--hx-font);
+  --h-font-button:  var(--hx-font);
+  --h-hw:800; --h-hs:normal; --h-hls:-.01em; --h-htt:uppercase;
+  --h-bw:400; --h-btw:700;   --h-btls:.06em; --h-bttt:uppercase;
+}
+
+/* ---------- Window frame (drawn by .h-frame from the footer injection) ---------- */
+body{margin:0;background:var(--hx-bg)}
+/* every page starts below the top bar and ends above the bottom frame */
+body:has(#h-header){padding:var(--h-header) 0 var(--hx-fw)}
+.h-frame{position:fixed;inset:0;z-index:998;pointer-events:none}
+.h-frame::before{
+  content:"";position:absolute;inset:var(--h-header) var(--hx-fw) var(--hx-fw);
+  border-radius:var(--hx-fr);box-shadow:0 0 0 100vmax var(--hx-frame);
+}
+
+/* ---------- Loader: CSS-only so it shows before any script runs ---------- */
+body::before,body::after{position:fixed;z-index:1001;pointer-events:none;animation:h-out .4s 3.5s forwards}
+body::before{content:"";inset:0;background:var(--hx-frame)}
+body::after{
+  content:"hindia";left:50%;top:50%;transform:translate(-50%,-50%);
+  font:800 clamp(34px,6vw,56px)/1 var(--hx-font);letter-spacing:-.01em;color:var(--hx-heading);
+  animation:h-pulse 1.4s ease-in-out infinite alternate,h-out .4s 3.5s forwards;
+}
+body.h-ready::before,body.h-ready::after{animation:h-out .4s forwards}
+@keyframes h-out{to{opacity:0;visibility:hidden}}
+@keyframes h-pulse{from{opacity:.35}to{opacity:1}}
+
+/* ---------- Entrance: content comes into focus as the loader fades ---------- */
+body.h-ready .h-sec > .h-wrap,body.h-ready .h-hero__card,body.h-ready .h-hero__actions{animation:h-unblur .9s .1s cubic-bezier(.2,.7,.2,1) both}
+@keyframes h-unblur{from{opacity:0;filter:blur(20px)}to{opacity:1;filter:none}}
+
+/* ---------- Dark cards and media: rounded, like the frame ---------- */
+.h-audio__art,.h-audio__player iframe,.h-vid__frame,.h-merch__img,.h-merch__kv,.h-card,.h-card__photo,
+.h-news__thumb,.h-kit,.h-about__photo img,.h-shows__cal{border-radius:var(--hx-r);overflow:hidden}
+.h-shows__cal{border:0}
+
+/* ---------- Squarespace resets: let our sections run full-bleed ---------- */
+.page-section:has(.h-sec){min-height:0!important;padding:0!important;background:var(--hx-bg)!important}
+.page-section:has(.h-sec) .content-wrapper{padding:0!important;max-width:none!important}
+.page-section:has(.h-sec) .fluid-engine{row-gap:0!important}
+.sqs-block:has(.h-sec){padding:0!important}
+.sqs-block-code:has(.h-sec) .sqs-block-content{margin:0}
+/* hide Squarespace's native header when our header is present */
+body:has(#h-header) #header,
+body:has(#h-header) .header-announcement-bar-wrapper{display:none!important}
+
+/* ---------- Shared section primitives ---------- */
+.h-sec{
+  --pad:clamp(72px,10vw,136px);
+  position:relative;
+  background:var(--h-bg);
+  color:var(--h-text);
+  font-family:var(--h-font-body);
+  font-weight:var(--h-bw);
+  font-size:17px;
+  line-height:1.55;
+  padding:var(--pad) var(--h-gutter);
+  -webkit-font-smoothing:antialiased;
+}
+.h-sec *,.h-sec *::before,.h-sec *::after{box-sizing:border-box}
+.h-sec img{max-width:100%;display:block}
+.h-wrap{max-width:var(--h-max);margin:0 auto}
+
+.h-head{
+  display:flex;align-items:flex-end;justify-content:space-between;gap:24px;
+  border-bottom:1px solid var(--h-line);
+  padding-bottom:20px;margin-bottom:clamp(32px,5vw,56px);
+}
+.h-title{
+  font-family:var(--h-font-heading);
+  font-weight:var(--h-hw);
+  font-style:var(--h-hs);
+  letter-spacing:var(--h-hls);
+  text-transform:var(--h-htt);
+  color:var(--h-heading);
+  font-size:clamp(34px,5.2vw,72px);
+  line-height:.95;
+  margin:0;
+}
+/* every heading-font element shares the heading styling */
+.h-audio__name,.h-audio__fallback,.h-vid__title,.h-show__name,.h-show__date b,
+.h-shows__month,.h-merch__name,.h-merch__kvtitle,.h-card__title,.h-news__title,.h-kit__title,
+.h-guest__title,.h-foot__mark,.h-empty{
+  letter-spacing:var(--h-hls);text-transform:var(--h-htt);
+}
+.h-audio__name,.h-vid__title,.h-show__name,.h-merch__name,.h-card__title,
+.h-news__title,.h-guest__title,.h-foot__mark{color:var(--h-heading)}
+.h-merch__kvtitle,.h-kit__title{color:inherit}
+.h-lede{max-width:52ch;color:var(--h-muted);margin:14px 0 0;font-size:16px}
+
+.h-controls{display:flex;align-items:center;gap:14px;flex-shrink:0}
+.h-head > :first-child{min-width:0}
+@media (max-width:700px){
+  .h-head{flex-wrap:wrap;align-items:center}
+  .h-head > :first-child{flex:1 1 100%}
+  .h-controls{margin-left:auto}
+}
+.h-count{font-size:14px;font-variant-numeric:tabular-nums;opacity:.7;min-width:3.5em;text-align:right}
+.h-arrow{
+  width:48px;height:48px;border-radius:50%;
+  border:1px solid currentColor;background:transparent;color:inherit;
+  display:grid;place-items:center;cursor:pointer;padding:0;
+  transition:background-color .2s,color .2s;
+}
+.h-arrow:hover:not(:disabled){background:var(--h-heading);color:var(--h-bg);border-color:var(--h-heading)}
+.h-arrow:disabled{opacity:.25;cursor:default}
+.h-arrow svg{width:18px;height:18px}
+
+.h-btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:10px;
+  font-family:var(--h-font-button);font-weight:var(--h-btw);font-size:13px;line-height:1;
+  letter-spacing:var(--h-btls);text-transform:var(--h-bttt);
+  padding:14px 24px;border-radius:999px;
+  border:1px solid color-mix(in srgb,var(--h-heading) 30%,transparent);
+  background:color-mix(in srgb,var(--hx-surface) 85%,transparent);color:var(--h-heading);
+  text-decoration:none;cursor:pointer;transition:background-color .2s,color .2s,border-color .2s;
+}
+.h-btn:hover{background:var(--h-heading);color:var(--h-bg);border-color:var(--h-heading)}
+.h-btn--accent{background:var(--h-accent);border-color:var(--h-accent);color:var(--hx-heading)}
+.h-btn--accent:hover{background:transparent;color:var(--h-accent);border-color:var(--h-accent)}
+.h-btn--ghost{background:transparent}
+/* --light kept for compatibility: the primary button already contrasts with its section */
+
+.h-link{color:var(--h-accent);text-decoration:underline;text-underline-offset:4px;text-decoration-thickness:1px;font-weight:500}
+.h-link:hover{text-decoration-thickness:2px}
+
+.h-meta{display:grid;grid-template-columns:auto 1fr;gap:6px 20px;margin:0;font-size:15px}
+.h-meta dt{color:var(--h-muted)}
+.h-meta dd{margin:0;font-variant-numeric:tabular-nums}
+
+.h-empty{padding:40px 0;color:var(--h-muted);font-family:var(--h-font-heading);font-size:22px}
+
+.h-sec :focus-visible,.h-themed :focus-visible{outline:2px solid var(--h-accent);outline-offset:3px}
+.h-sr{position:absolute!important;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+@media (prefers-reduced-motion:reduce){
+  .h-sec *,.h-themed *{transition:none!important;animation:none!important}
+  body::after{animation:h-out .01s 3.5s forwards}
+  body.h-ready::before,body.h-ready::after{animation:h-out .01s forwards}
+}
+</style>
+
+<script>
+window.H1024 = window.H1024 || (function(){
+  var KEY = "h1024-lang";
+  var lang;
+  try { lang = localStorage.getItem(KEY); } catch(e) {}
+  if (lang !== "en" && lang !== "id") {
+    lang = (navigator.language || "").toLowerCase().indexOf("id") === 0 ? "id" : "en";
+  }
+  var subs = [];
+
+  /* t({en:"..", id:".."}) → string in the current language */
+  function t(v){
+    if (v == null) return "";
+    if (typeof v !== "object") return String(v);
+    return v[lang] != null ? v[lang] : (v.en != null ? v.en : "");
+  }
+
+  /* Swap text for any element with data-en / data-id attributes.
+     Also supports data-en-aria / data-id-aria and data-en-ph / data-id-ph. */
+  function applyStatic(root){
+    root = root || document;
+    root.querySelectorAll("[data-en]").forEach(function(el){
+      el.textContent = el.getAttribute("data-" + lang) || el.getAttribute("data-en");
+    });
+    root.querySelectorAll("[data-en-aria]").forEach(function(el){
+      el.setAttribute("aria-label", el.getAttribute("data-" + lang + "-aria") || el.getAttribute("data-en-aria"));
+    });
+    root.querySelectorAll("[data-en-ph]").forEach(function(el){
+      el.setAttribute("placeholder", el.getAttribute("data-" + lang + "-ph") || el.getAttribute("data-en-ph"));
+    });
+  }
+
+  function setLang(l){
+    if (l !== "en" && l !== "id") return;
+    lang = l;
+    try { localStorage.setItem(KEY, l); } catch(e) {}
+    document.documentElement.setAttribute("lang", l);
+    applyStatic();
+    subs.forEach(function(fn){ try { fn(l); } catch(e) { console.error(e); } });
+  }
+  function onLang(fn){ subs.push(fn); }
+
+  function esc(s){
+    return String(s == null ? "" : s).replace(/[&<>"']/g, function(c){
+      return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];
+    });
+  }
+  function locale(){ return lang === "id" ? "id-ID" : "en-GB"; }
+
+  /* Generic prev/next controller.
+     opts: prev, next, status (elements), count(), perView(), onChange(index), swipe (element) */
+  function stepper(opts){
+    var i = 0;
+    var per = opts.perView || function(){ return 1; };
+    function max(){ return Math.max(0, opts.count() - per()); }
+    function go(n){
+      i = Math.min(Math.max(n, 0), max());
+      opts.prev.disabled = i === 0;
+      opts.next.disabled = i >= max();
+      if (opts.status) {
+        var pages = max() + 1;
+        opts.status.textContent = pages > 1 ? (i + 1) + " / " + pages : "";
+      }
+      opts.onChange(i);
+    }
+    opts.prev.addEventListener("click", function(){ go(i - 1); });
+    opts.next.addEventListener("click", function(){ go(i + 1); });
+    if (opts.swipe) {
+      var x0 = null;
+      opts.swipe.addEventListener("touchstart", function(e){ x0 = e.touches[0].clientX; }, {passive:true});
+      opts.swipe.addEventListener("touchend", function(e){
+        if (x0 == null) return;
+        var dx = e.changedTouches[0].clientX - x0;
+        if (Math.abs(dx) > 48) go(i + (dx < 0 ? 1 : -1));
+        x0 = null;
+      });
+    }
+    window.addEventListener("resize", function(){ go(i); });
+    return { go: go, get index(){ return i; } };
+  }
+
+  var icon = {
+    prev: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>',
+    next: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>',
+    play: '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5.5v13l11-6.5z"/></svg>'
+  };
+
+  document.documentElement.setAttribute("lang", lang);
+  document.addEventListener("DOMContentLoaded", function(){ applyStatic(); });
+
+  return {
+    get lang(){ return lang; },
+    t: t, setLang: setLang, onLang: onLang, applyStatic: applyStatic,
+    esc: esc, locale: locale, stepper: stepper, icon: icon
+  };
+})();
+</script>

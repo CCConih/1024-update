@@ -1,0 +1,78 @@
+<!-- ============================================================
+  HINDIA 1024 — 09 ABOUT HINDIA
+  Where: its own page (see README) → one section → Code Block.
+  EDIT: photo URL + credit, the bio text in BOTH languages (paste the
+  official bio used on Spotify/Apple Music), and the platform links.
+  Platform links are text on purpose — if you want the official
+  badges, download them from each platform's brand/marketing page
+  and swap them in as <img>.
+============================================================ -->
+<section class="h-sec h-about" id="about" aria-labelledby="h-about-title">
+  <div class="h-wrap h-about__grid">
+    <figure class="h-about__photo">
+      <img src="PHOTO_URL" alt="Hindia performing on stage" loading="lazy">
+      <figcaption data-en="Photo: PHOTOGRAPHER NAME" data-id="Foto: NAMA FOTOGRAFER">Photo: PHOTOGRAPHER NAME</figcaption>
+    </figure>
+
+    <div class="h-about__text">
+      <h1 id="h-about-title" class="h-title" data-en="About Hindia" data-id="Tentang Hindia">About Hindia</h1>
+
+      <!-- BIO — English -->
+      <div class="h-about__bio" lang="en" data-bio="en">
+        <p>Hindia is the solo project of Jakarta musician Baskara Putra, who also fronts the band .Feast. [Paste the official bio here — keep it to 3 short paragraphs.]</p>
+        <p>[Paragraph two.]</p>
+      </div>
+      <!-- BIO — Bahasa Indonesia -->
+      <div class="h-about__bio" lang="id" data-bio="id" hidden>
+        <p>Hindia adalah proyek solo musisi Jakarta Baskara Putra, yang juga vokalis band .Feast. [Tempel bio resmi di sini — maksimal 3 paragraf pendek.]</p>
+        <p>[Paragraf kedua.]</p>
+      </div>
+
+      <h3 class="h-about__sub" data-en="Listen and follow" data-id="Dengarkan dan ikuti">Listen and follow</h3>
+      <ul class="h-about__links">
+        <li><a href="SPOTIFY_ARTIST_URL" target="_blank" rel="noopener">Spotify</a></li>
+        <li><a href="APPLE_MUSIC_URL" target="_blank" rel="noopener">Apple Music</a></li>
+        <li><a href="YOUTUBE_MUSIC_URL" target="_blank" rel="noopener">YouTube Music</a></li>
+        <li><a href="INSTAGRAM_URL" target="_blank" rel="noopener">Instagram</a></li>
+        <li><a href="TIKTOK_URL" target="_blank" rel="noopener">TikTok</a></li>
+      </ul>
+
+      <p class="h-about__booking">
+        <span data-en="Booking & management: " data-id="Booking & manajemen: ">Booking &amp; management: </span>
+        <a class="h-link" href="mailto:booking@example.com">booking@example.com</a>
+      </p>
+    </div>
+  </div>
+</section>
+
+<style>
+.h-about__grid{display:grid;grid-template-columns:minmax(0,6fr) minmax(0,5fr);gap:clamp(32px,6vw,96px);align-items:end}
+.h-about__photo{margin:0}
+.h-about__photo img{width:100%;aspect-ratio:4/5;object-fit:cover;background:var(--h-accent-soft)}
+.h-about__photo figcaption{font-size:13px;color:var(--h-muted);margin-top:10px}
+.h-about__text .h-title{margin-bottom:32px}
+.h-about__bio{font-family:var(--h-font-body);font-size:clamp(18px,1.5vw,20px);line-height:1.65;max-width:34em}
+.h-about__bio p{margin:0 0 1em}
+.h-about__sub{font:600 15px/1 var(--h-font-body);margin:36px 0 14px}
+.h-about__links{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:10px}
+.h-about__links a{
+  display:inline-block;padding:10px 16px;border:1px solid var(--h-heading);border-radius:999px;
+  color:var(--h-heading);text-decoration:none;font-size:14px;font-weight:500;transition:background-color .2s,color .2s;
+}
+.h-about__links a:hover{background:var(--h-heading);color:var(--h-bg)}
+.h-about__booking{margin:28px 0 0;font-size:15px}
+@media (max-width:860px){.h-about__grid{grid-template-columns:1fr;align-items:start}}
+</style>
+
+<script>
+(function(){
+  var root = document.getElementById("about");
+  if (!root || !window.H1024) return;
+  function showBio(l){
+    root.querySelectorAll("[data-bio]").forEach(function(el){ el.hidden = el.getAttribute("data-bio") !== l; });
+  }
+  showBio(H1024.lang);
+  H1024.onLang(showBio);
+  H1024.applyStatic(root);
+})();
+</script>

@@ -1,0 +1,129 @@
+<!-- ============================================================
+  HINDIA 1024 — 06 OFFICIAL MERCHANDISE (merch catalogue)
+  Where: its own page (see README) → one section → Code Block.
+  Data source:
+   - PRODUCTS (manual list) — works with any store (webstore, Tokopedia, Shopee)
+   - or FEED_URL — only if the webstore runs on Shopify AND allows cross-site
+     requests. Point it at the Hindia collection, e.g.
+     https://STORE-DOMAIN/collections/hindia/products.json
+     If the browser console shows a CORS error, keep using PRODUCTS.
+  KV: the key-visual banner on the right (current drop / campaign).
+============================================================ -->
+<section class="h-sec h-merch" id="merch" aria-labelledby="h-merch-title">
+  <div class="h-wrap">
+    <header class="h-head">
+      <h1 id="h-merch-title" class="h-title" data-en="Official merchandise" data-id="Merchandise resmi">Official merchandise</h1>
+      <div class="h-controls">
+        <button type="button" class="h-arrow" data-prev data-en-aria="Scroll products left" data-id-aria="Geser produk ke kiri"></button>
+        <button type="button" class="h-arrow" data-next data-en-aria="Scroll products right" data-id-aria="Geser produk ke kanan"></button>
+      </div>
+    </header>
+
+    <div class="h-merch__grid">
+      <ul class="h-merch__row" tabindex="0" data-en-aria="Products" data-id-aria="Produk"></ul>
+
+      <a class="h-merch__kv" href="STORE_URL" target="_blank" rel="noopener">
+        <img src="KV_IMAGE_URL" alt="" loading="lazy">
+        <span class="h-merch__kvtext">
+          <span class="h-merch__kvtitle" data-en="The new drop is in the store" data-id="Rilisan merch terbaru sudah di toko">The new drop is in the store</span>
+          <span class="h-merch__kvcta" data-en="Shop all Hindia merch" data-id="Lihat semua merch Hindia">Shop all Hindia merch</span>
+        </span>
+      </a>
+    </div>
+  </div>
+</section>
+
+<style>
+.h-merch__grid{display:grid;grid-template-columns:minmax(0,3fr) minmax(0,2fr);gap:clamp(24px,3vw,40px);align-items:stretch}
+.h-merch__row{
+  list-style:none;margin:0;padding:0 0 12px;display:grid;grid-auto-flow:column;
+  grid-auto-columns:calc((100% - 2 * 20px) / 2.4);gap:20px;
+  overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:thin;overscroll-behavior-x:contain;
+}
+.h-merch__row > li{scroll-snap-align:start}
+.h-merch__item a{color:inherit;text-decoration:none;display:block}
+.h-merch__img{aspect-ratio:4/5;background:var(--h-bg-2);overflow:hidden}
+.h-merch__img img{width:100%;height:100%;object-fit:cover;transition:transform .5s}
+.h-merch__item a:hover img{transform:scale(1.04)}
+.h-merch__name{font:var(--h-hs) var(--h-hw) 19px/1.25 var(--h-font-heading);margin:14px 0 4px;}
+.h-merch__price{margin:0;font-size:15px;color:var(--h-muted);font-variant-numeric:tabular-nums}
+.h-merch__price s{margin-left:6px;opacity:.6}
+
+.h-merch__kv{
+  position:relative;display:block;min-height:420px;overflow:hidden;background:var(--h-bg-2);color:var(--h-heading);text-decoration:none;
+}
+.h-merch__kv img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:transform .6s}
+.h-merch__kv:hover img{transform:scale(1.03)}
+.h-merch__kvtext{
+  position:absolute;inset:auto 0 0 0;padding:28px;display:flex;flex-direction:column;gap:14px;
+  background:linear-gradient(0deg,color-mix(in srgb,var(--h-bg) 88%,transparent),transparent);
+}
+.h-merch__kvtitle{font:var(--h-hs) var(--h-hw) clamp(26px,2.6vw,36px)/1.05 var(--h-font-heading);letter-spacing:var(--h-hls);}
+.h-merch__kvcta{font-weight:600;font-size:15px;text-decoration:underline;text-underline-offset:4px}
+@media (max-width:900px){
+  .h-merch__grid{grid-template-columns:1fr}
+  .h-merch__kv{order:-1;min-height:0;aspect-ratio:4/3}
+  .h-merch__row{grid-auto-columns:62%}
+}
+</style>
+
+<script>
+(function(){
+  /* ---------- CONFIG ---------- */
+  var STORE_URL = "STORE_URL";   /* fallback link for items without url */
+  var FEED_URL = "";             /* optional Shopify products.json (see top note) */
+  var PRODUCTS = [
+    { name:"Product name", price:250000, compareAt:0, image:"", url:"" },
+    { name:"Product name", price:185000, compareAt:0, image:"", url:"" },
+    { name:"Product name", price:320000, compareAt:0, image:"", url:"" },
+    { name:"Product name", price:150000, compareAt:0, image:"", url:"" }
+  ];
+
+  var root = document.getElementById("merch");
+  if (!root || !window.H1024) return;
+  var row = root.querySelector(".h-merch__row");
+  var prev = root.querySelector("[data-prev]"), next = root.querySelector("[data-next]");
+  prev.innerHTML = H1024.icon.prev; next.innerHTML = H1024.icon.next;
+  var items = PRODUCTS;
+
+  function idr(n){
+    return new Intl.NumberFormat("id-ID", {style:"currency", currency:"IDR", maximumFractionDigits:0}).format(n);
+  }
+  function render(){
+    row.innerHTML = items.map(function(p){
+      var old = p.compareAt && p.compareAt > p.price ? "<s>" + idr(p.compareAt) + "</s>" : "";
+      return '<li class="h-merch__item"><a href="' + H1024.esc(p.url || STORE_URL) + '" target="_blank" rel="noopener">' +
+        '<div class="h-merch__img">' + (p.image ? '<img loading="lazy" alt="" src="' + H1024.esc(p.image) + '">' : "") + '</div>' +
+        '<h3 class="h-merch__name">' + H1024.esc(p.name) + '</h3>' +
+        '<p class="h-merch__price">' + (p.price ? idr(p.price) : "") + old + '</p>' +
+      '</a></li>';
+    }).join("");
+    syncArrows();
+  }
+  function syncArrows(){
+    prev.disabled = row.scrollLeft <= 2;
+    next.disabled = row.scrollLeft + row.clientWidth >= row.scrollWidth - 2;
+  }
+  function page(dir){ row.scrollBy({left: dir * row.clientWidth * 0.85, behavior:"smooth"}); }
+  prev.addEventListener("click", function(){ page(-1); });
+  next.addEventListener("click", function(){ page(1); });
+  row.addEventListener("scroll", syncArrows, {passive:true});
+  window.addEventListener("resize", syncArrows);
+
+  render();
+  if (FEED_URL) {
+    fetch(FEED_URL).then(function(r){ return r.json(); }).then(function(d){
+      var base = FEED_URL.split("/collections/")[0];
+      var list = (d.products || []).map(function(p){
+        var v = (p.variants || [])[0] || {};
+        return {
+          name: p.title, price: parseFloat(v.price) || 0, compareAt: parseFloat(v.compare_at_price) || 0,
+          image: ((p.images || [])[0] || {}).src || "", url: base + "/products/" + p.handle
+        };
+      });
+      if (list.length) { items = list; render(); }
+    }).catch(function(err){ console.warn("[h1024] merch feed:", err); });
+  }
+  H1024.applyStatic(root);
+})();
+</script>

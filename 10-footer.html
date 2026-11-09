@@ -1,0 +1,52 @@
+<!-- ============================================================
+  HINDIA 1024 — 10 FOOTER
+  Where: Code Block inside the SITE FOOTER (Edit site footer) —
+  it then appears on every page. Year updates itself.
+============================================================ -->
+<footer class="h-sec h-foot" id="h-footer">
+  <div class="h-wrap">
+    <div class="h-foot__top">
+      <p class="h-foot__mark">hindia</p>
+      <nav aria-label="Footer">
+        <ul class="h-foot__nav">
+          <li><a href="/music"     data-en="Songs"  data-id="Lagu">Songs</a></li>
+          <li><a href="/merch"     data-en="Merch"  data-id="Merch">Merch</a></li>
+          <li><a href="/postcards" data-en="Blog"   data-id="Blog">Blog</a></li>
+          <li><a href="/news"      data-en="Press"  data-id="Pers">Press</a></li>
+          <li><a href="/about"     data-en="About"  data-id="Tentang">About</a></li>
+        </ul>
+      </nav>
+    </div>
+    <div class="h-foot__bottom">
+      <p>© <span class="h-foot__year">2026</span> sepuluhduaempat</p>
+      <p>
+        <a href="PRIVACY_URL" data-en="Privacy policy" data-id="Kebijakan privasi">Privacy policy</a>
+        <button type="button" class="h-foot__sign" data-open-guestbook data-en="Sign the guest book" data-id="Isi buku tamu">Sign the guest book</button>
+      </p>
+    </div>
+  </div>
+</footer>
+
+<style>
+.h-foot{padding-top:clamp(56px,8vw,96px);padding-bottom:32px}
+.h-foot a,.h-foot button{color:inherit}
+.h-foot__mark{color:var(--h-heading)}
+.h-foot__top{display:flex;justify-content:space-between;align-items:flex-end;gap:32px;flex-wrap:wrap;padding-bottom:40px;border-bottom:1px solid var(--h-line)}
+.h-foot__mark{margin:0;font:var(--h-hs) var(--h-hw) clamp(72px,14vw,200px)/.8 var(--h-font-heading);letter-spacing:var(--h-hls)}
+.h-foot__nav{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:8px 28px}
+.h-foot__nav a{text-decoration:none;font-size:16px;font-weight:500}
+.h-foot__nav a:hover{text-decoration:underline;text-underline-offset:4px}
+.h-foot__bottom{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;padding-top:20px;font-size:14px;opacity:.75}
+.h-foot__bottom p{margin:0}
+.h-foot__bottom p:last-child{display:flex;gap:20px;align-items:center}
+.h-foot__sign{background:none;border:0;padding:0;font:inherit;cursor:pointer;text-decoration:underline;text-underline-offset:4px}
+</style>
+
+<script>
+(function(){
+  var root = document.getElementById("h-footer");
+  if (!root || !window.H1024) return;
+  root.querySelector(".h-foot__year").textContent = new Date().getFullYear();
+  H1024.applyStatic(root);
+})();
+</script>

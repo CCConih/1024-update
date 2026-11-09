@@ -1,0 +1,95 @@
+<!-- ============================================================
+  HINDIA 1024 — 02 HOME (full-window video + latest release)
+  Where: Home page, its only section → Code Block.
+  EDIT:
+   - VIDEO_URL / POSTER_URL below (MP4, H.264, ≤ 8–10 MB, 720p is enough).
+     Host them on Squarespace (upload as a file): the liquid effect in 01c needs
+     a host that allows cross-site use, which Squarespace does.
+   - RELEASE_COVER_URL, RELEASE_TITLE, FOLLOW_URL
+  The guest book pop-up lives in 01b (site-wide).
+  COLOURS: set in the :root block of 00-global-HEADER-injection.html.
+============================================================ -->
+<section class="h-sec h-hero" id="home">
+  <video class="h-hero__video" autoplay muted loop playsinline preload="metadata" crossorigin="anonymous"
+         poster="POSTER_URL">
+    <source src="VIDEO_URL" type="video/mp4">
+  </video>
+  <div class="h-hero__shade" aria-hidden="true"></div>
+
+  <h1 class="h-sr">Hindia</h1>
+
+  <!-- latest release card — EDIT: RELEASE_COVER_URL, release title, LISTEN_URL -->
+  <div class="h-hero__card">
+    <img class="h-hero__cover" src="RELEASE_COVER_URL" alt="" width="104" height="104">
+    <div class="h-hero__info">
+      <p class="h-hero__kicker" data-en="Out now" data-id="Sudah rilis">Out now</p>
+      <p class="h-hero__release">RELEASE_TITLE</p>
+      <a class="h-btn h-btn--accent" href="/music" data-en="Listen now" data-id="Dengar sekarang">Listen now</a>
+    </div>
+  </div>
+
+  <div class="h-hero__actions">
+    <button type="button" class="h-btn" data-open-guestbook
+            data-en="Sign the guest book" data-id="Isi buku tamu">Sign the guest book</button>
+    <a class="h-btn" href="FOLLOW_URL" target="_blank" rel="noopener"
+       data-en="Follow" data-id="Ikuti">Follow</a>
+    <button type="button" class="h-hero__pause" aria-pressed="false"
+            data-en-aria="Pause background video" data-id-aria="Jeda video latar">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path class="i-pause" d="M8 5h3v14H8zM13 5h3v14h-3z" fill="currentColor"/><path class="i-play" d="M8 5.5v13l11-6.5z" fill="currentColor"/></svg>
+    </button>
+  </div>
+</section>
+
+<style>
+.h-hero{
+  /* fills the window: viewport minus top bar and bottom frame */
+  box-sizing:border-box;min-height:calc(100svh - var(--h-header) - var(--hx-fw));
+  display:flex;align-items:flex-end;justify-content:space-between;gap:20px;flex-wrap:wrap;
+  padding:calc(var(--hx-tab-drop) + 24px) calc(var(--hx-fw) + 16px) calc(var(--hx-fw) + 16px);
+  background:var(--h-bg);color:var(--h-heading);overflow:hidden;isolation:isolate;
+}
+.h-hero__video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:-2}
+.h-hero__shade{position:absolute;inset:0;z-index:-1;
+  background:linear-gradient(180deg,transparent 55%,color-mix(in srgb,var(--h-bg) 70%,transparent) 100%)}
+.h-hero__card{
+  display:flex;gap:18px;align-items:center;max-width:420px;
+  padding:14px 22px 14px 14px;border-radius:var(--hx-r);
+  background:color-mix(in srgb,var(--hx-frame) 88%,transparent);
+  border:1px solid color-mix(in srgb,var(--h-heading) 14%,transparent);
+  -webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);
+}
+.h-hero__cover{width:104px;height:104px;object-fit:cover;border-radius:6px;background:var(--hx-surface);flex-shrink:0}
+.h-hero__kicker{margin:0;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--h-muted)}
+.h-hero__release{margin:4px 0 12px;font-weight:800;font-size:17px;line-height:1.15;text-transform:uppercase;color:var(--h-heading)}
+.h-hero__actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.h-hero__pause{
+  width:44px;height:44px;border-radius:50%;border:1px solid color-mix(in srgb,var(--h-heading) 30%,transparent);
+  background:color-mix(in srgb,var(--hx-surface) 85%,transparent);color:var(--h-heading);cursor:pointer;display:grid;place-items:center;
+}
+@media (max-width:640px){
+  .h-hero{flex-direction:column-reverse;align-items:stretch;justify-content:flex-start}
+  .h-hero__card{max-width:none}
+  .h-hero__cover{width:84px;height:84px}
+}
+.h-hero__pause svg{width:16px;height:16px}
+.h-hero__pause .i-play{display:none}
+.h-hero__pause[aria-pressed="true"] .i-play{display:block}
+.h-hero__pause[aria-pressed="true"] .i-pause{display:none}
+
+</style>
+
+<script>
+(function(){
+  var hero = document.getElementById("home");
+  if (!hero || !window.H1024) return;
+
+  /* background video: respect reduced motion, give a pause control */
+  var video = hero.querySelector("video");
+  var pauseBtn = hero.querySelector(".h-hero__pause");
+  function setPaused(p){ p ? video.pause() : video.play().catch(function(){}); pauseBtn.setAttribute("aria-pressed", String(p)); }
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) setPaused(true);
+  pauseBtn.addEventListener("click", function(){ setPaused(!video.paused ? true : false); });
+
+  H1024.applyStatic(hero);
+})();
+</script>

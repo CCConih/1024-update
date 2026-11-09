@@ -1,0 +1,150 @@
+<!-- ============================================================
+  HINDIA 1024 — 01b GUEST BOOK POP-UP (site-wide)
+  Where: Settings → Advanced → Code Injection → FOOTER, pasted right
+  after 01. It loads on every page, so every "Sign the guest book"
+  button works, and any page + #guestbook (e.g. hindia1024.com/#guestbook)
+  opens it directly — good for IG bio links.
+  EDIT: GUESTBOOK_ENDPOINT (Google Apps Script web app URL,
+  see guestbook-apps-script.gs) and PRIVACY_URL.
+============================================================ -->
+<dialog class="h-guest h-themed" id="h-guestbook" aria-labelledby="h-guest-title">
+  <form class="h-guest__card" novalidate>
+    <button type="button" class="h-guest__x" data-close
+            data-en-aria="Close guest book" data-id-aria="Tutup buku tamu">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="1.6"/></svg>
+    </button>
+
+    <div class="h-guest__top">
+      <h2 id="h-guest-title" class="h-guest__title" data-en="Hindia guest book" data-id="Buku tamu Hindia">Hindia guest book</h2>
+      <p class="h-guest__date"></p>
+    </div>
+
+    <div class="h-guest__fields">
+      <label class="h-guest__row">
+        <span data-en="Your name" data-id="Nama kamu">Your name</span>
+        <input name="name" type="text" autocomplete="name" required maxlength="80">
+      </label>
+      <label class="h-guest__row">
+        <span data-en="Email" data-id="Email">Email</span>
+        <input name="email" type="email" autocomplete="email" inputmode="email" required maxlength="120">
+      </label>
+      <!-- honeypot: bots fill it, people never see it -->
+      <label class="h-sr" aria-hidden="true">Website<input name="website" tabindex="-1" autocomplete="off"></label>
+    </div>
+
+    <label class="h-guest__consent">
+      <input name="consent" type="checkbox" required>
+      <span>
+        <span data-en="I agree to receive emails from 1024 about Hindia and understand I can unsubscribe at any time."
+              data-id="Saya setuju menerima email dari 1024 tentang Hindia dan bisa berhenti berlangganan kapan saja.">I agree to receive emails from 1024 about Hindia and understand I can unsubscribe at any time.</span>
+        <a class="h-link" href="PRIVACY_URL" target="_blank" rel="noopener" data-en="Privacy policy" data-id="Kebijakan privasi">Privacy policy</a>
+      </span>
+    </label>
+
+    <p class="h-guest__status" role="status" aria-live="polite"></p>
+
+    <button type="submit" class="h-btn h-guest__submit" data-en="Sign the guest book" data-id="Isi buku tamu">Sign the guest book</button>
+  </form>
+</dialog>
+
+<style>
+/* ---- Guest book pop-up: a ruled page ---- */
+.h-guest{border:0;padding:0;background:transparent;max-width:min(560px,calc(100vw - 24px));width:100%;color:var(--h-text)}
+.h-guest::backdrop{background:rgba(0,0,0,.45);-webkit-backdrop-filter:blur(15px);backdrop-filter:blur(15px)}
+.h-guest__card{
+  position:relative;background:var(--h-bg);font-family:var(--h-font-body);
+  padding:clamp(28px,5vw,48px);border-radius:var(--hx-fr);border:1px solid var(--h-line);
+  box-shadow:0 30px 80px -20px rgba(0,0,0,.5);
+}
+.h-guest__x{position:absolute;top:14px;right:14px;width:40px;height:40px;background:none;border:0;cursor:pointer;color:var(--h-heading)}
+.h-guest__x svg{width:20px;height:20px}
+.h-guest__top{border-bottom:2px solid var(--h-heading);padding-bottom:14px;margin-bottom:8px}
+.h-guest__title{font:var(--h-hs) var(--h-hw) clamp(32px,5vw,44px)/1 var(--h-font-heading);letter-spacing:var(--h-hls);margin:0}
+.h-guest__date{margin:8px 0 0;font-size:14px;color:var(--h-muted)}
+.h-guest__row{display:grid;grid-template-columns:7.5em 1fr;align-items:end;gap:12px;border-bottom:1px solid var(--h-line);padding:18px 0 8px}
+.h-guest__row span{font-size:14px;color:var(--h-muted);padding-bottom:4px}
+.h-guest__row input{
+  border:0;background:transparent;font:var(--h-bw) 20px/1.3 var(--h-font-body);color:var(--h-heading);
+  padding:4px 0;width:100%;min-width:0;border-radius:0;
+}
+.h-guest__row input:focus{outline:none}
+.h-guest__row:focus-within{border-bottom-color:var(--h-accent);box-shadow:0 1px 0 var(--h-accent)}
+.h-guest__consent{display:flex;gap:12px;align-items:flex-start;margin:24px 0 8px;font-size:14px;line-height:1.5;color:var(--h-muted)}
+.h-guest__consent input{width:18px;height:18px;margin:2px 0 0;accent-color:var(--h-btn-bg);flex-shrink:0}
+.h-guest__status{min-height:1.5em;font-size:14px;margin:8px 0 16px}
+.h-guest__status[data-tone="error"]{color:var(--h-accent);font-weight:600}
+.h-guest__status[data-tone="ok"]{font:var(--h-hs) var(--h-hw) 20px/1.35 var(--h-font-heading);color:var(--h-heading)}
+.h-guest__submit{width:100%}
+.h-guest__submit[disabled]{opacity:.5;cursor:wait}
+@media (max-width:480px){.h-guest__row{grid-template-columns:1fr;gap:2px}}
+</style>
+
+<script>
+(function(){
+  /* ---------- CONFIG ---------- */
+  var GUESTBOOK_ENDPOINT = "https://script.google.com/macros/s/XXXXXXXX/exec";
+
+  var dlg = document.getElementById("h-guestbook");
+  if (!dlg || !window.H1024) return;
+  document.body.appendChild(dlg); /* keep the dialog outside Squarespace's block wrappers */
+
+  /* guest book */
+  var form = dlg.querySelector("form");
+  var status = dlg.querySelector(".h-guest__status");
+  var submit = dlg.querySelector(".h-guest__submit");
+  var dateEl = dlg.querySelector(".h-guest__date");
+  var MSG = {
+    name:   {en:"Write your name on the first line.", id:"Tulis nama kamu di baris pertama."},
+    email:  {en:"That email doesn't look complete — check for a missing @ or domain.", id:"Email belum lengkap — cek tanda @ atau domainnya."},
+    consent:{en:"Tick the box so we're allowed to email you.", id:"Centang kotak persetujuan supaya kami boleh mengirim email."},
+    fail:   {en:"The guest book didn't save. Check your connection and sign again.", id:"Buku tamu belum tersimpan. Cek koneksi kamu lalu coba lagi."},
+    ok:     {en:"Signed. Watch your inbox for news from 1024.", id:"Sudah tercatat. Tunggu kabar dari 1024 di inbox kamu."},
+    signed: {en:"Signed on ", id:"Ditandatangani "}
+  };
+  function paintDate(){
+    dateEl.textContent = H1024.t(MSG.signed) + new Date().toLocaleDateString(H1024.locale(), {day:"numeric", month:"long", year:"numeric"});
+  }
+  function say(key, tone){ status.textContent = key ? H1024.t(MSG[key]) : ""; status.setAttribute("data-tone", tone || ""); }
+
+  function open(){
+    paintDate(); say("");
+    if (typeof dlg.showModal === "function") dlg.showModal(); else dlg.setAttribute("open","");
+    form.querySelector('[name="name"]').focus();
+  }
+  function close(){ if (dlg.open) dlg.close(); }
+
+  document.addEventListener("click", function(e){
+    if (e.target.closest("[data-open-guestbook]")) { e.preventDefault(); open(); }
+  });
+  dlg.querySelector("[data-close]").addEventListener("click", close);
+  dlg.addEventListener("click", function(e){ if (e.target === dlg) close(); });
+  /* open directly with hindia1024.com/#guestbook (useful for IG bio links) */
+  if (location.hash === "#guestbook") setTimeout(open, 400);
+
+  form.addEventListener("submit", function(e){
+    e.preventDefault();
+    var fd = new FormData(form);
+    var name = String(fd.get("name") || "").trim();
+    var email = String(fd.get("email") || "").trim();
+    if (!name) return say("name","error");
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) return say("email","error");
+    if (!fd.get("consent")) return say("consent","error");
+
+    submit.disabled = true; say("");
+    var body = new URLSearchParams({
+      name: name, email: email, consent: "yes",
+      website: String(fd.get("website") || ""),
+      lang: H1024.lang, source: location.pathname + location.search
+    });
+    fetch(GUESTBOOK_ENDPOINT, { method:"POST", body: body })
+      .then(function(r){ return r.json(); })
+      /* say "Signed" only when guestbook-apps-script.gs confirms the row was saved */
+      .then(function(d){ if (!d || d.ok !== true) throw new Error("not saved"); form.reset(); say("ok","ok"); })
+      .catch(function(){ say("fail","error"); })
+      .finally(function(){ submit.disabled = false; });
+  });
+
+  H1024.onLang(function(){ paintDate(); if (status.textContent) status.textContent = ""; });
+  H1024.applyStatic(dlg);
+})();
+</script>

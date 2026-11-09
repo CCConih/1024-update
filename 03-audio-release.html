@@ -1,0 +1,139 @@
+<!-- ============================================================
+  HINDIA 1024 — 03 AUDIO RELEASE (song catalogue)
+  Where: its own page (see README) → one section → Code Block.
+  EDIT: the ALBUMS list in the script. Newest first.
+   - spotify: the album ID from the share link
+     open.spotify.com/album/<THIS PART>?si=...
+   - artwork: image URL (square, ≥ 1000px)
+   - listen: your smart link (e.g. a fanlink / linktree for that release)
+   Anything left as "" is simply hidden.
+============================================================ -->
+<section class="h-sec h-audio" id="music" aria-labelledby="h-audio-title">
+  <div class="h-wrap">
+    <header class="h-head">
+      <div>
+        <h1 id="h-audio-title" class="h-title" data-en="Audio release" data-id="Rilisan audio">Audio release</h1>
+      </div>
+      <div class="h-controls">
+        <span class="h-count" aria-hidden="true"></span>
+        <button type="button" class="h-arrow" data-prev data-en-aria="Previous release" data-id-aria="Rilisan sebelumnya"></button>
+        <button type="button" class="h-arrow" data-next data-en-aria="Next release" data-id-aria="Rilisan berikutnya"></button>
+      </div>
+    </header>
+
+    <div class="h-audio__stage" aria-live="polite">
+      <figure class="h-audio__art"><img alt="" loading="lazy"><figcaption class="h-audio__fallback"></figcaption></figure>
+      <div class="h-audio__info">
+        <h3 class="h-audio__name"></h3>
+        <dl class="h-meta"></dl>
+        <p class="h-audio__listen"><a class="h-btn h-btn--ghost" target="_blank" rel="noopener"></a></p>
+      </div>
+      <div class="h-audio__player"></div>
+    </div>
+  </div>
+</section>
+
+<style>
+.h-audio__stage{
+  display:grid;grid-template-columns:minmax(0,5fr) minmax(0,3fr) minmax(0,5fr);
+  gap:clamp(24px,3.5vw,48px);align-items:start;
+}
+.h-audio__art{margin:0;aspect-ratio:1;background:var(--h-accent-soft);position:relative;overflow:hidden}
+.h-audio__art img{width:100%;height:100%;object-fit:cover}
+.h-audio__art img:not([src]),.h-audio__art img[src=""]{visibility:hidden}
+.h-audio__fallback{position:absolute;inset:auto 20px 20px;font:var(--h-hs) var(--h-hw) 28px/1.1 var(--h-font-heading);color:var(--h-text)}
+.h-audio__art img[src]:not([src=""]) + .h-audio__fallback{display:none}
+.h-audio__name{font:var(--h-hs) var(--h-hw) clamp(28px,3vw,40px)/1.05 var(--h-font-heading);letter-spacing:var(--h-hls);margin:0 0 24px}
+.h-audio__listen{margin:28px 0 0}
+.h-audio__player iframe{width:100%;height:452px;border:0;border-radius:12px;display:block}
+@media (max-width:1024px){
+  .h-audio__stage{grid-template-columns:1fr 1fr}
+  .h-audio__player{grid-column:1 / -1}
+  .h-audio__player iframe{height:380px}
+}
+@media (max-width:640px){
+  .h-audio__stage{grid-template-columns:1fr}
+}
+</style>
+
+<script>
+(function(){
+  /* ---------- CONFIG: newest first ---------- */
+  var ALBUMS = [
+    {
+      name: "Doves, '25 on Blank Canvas",
+      year: "2025",
+      tracks: "",          /* e.g. "12" */
+      length: "",          /* e.g. "48 min" */
+      label: "",           /* e.g. "℗ 2025 Sun Eater" */
+      artwork: "",
+      spotify: "SPOTIFY_ALBUM_ID",
+      listen: ""
+    },
+    {
+      name: "Lagipula Hidup Akan Berakhir",
+      year: "2023", tracks: "", length: "", label: "",
+      artwork: "", spotify: "SPOTIFY_ALBUM_ID", listen: ""
+    },
+    {
+      name: "Menari dengan Bayangan",
+      year: "2019", tracks: "", length: "", label: "",
+      artwork: "", spotify: "SPOTIFY_ALBUM_ID", listen: ""
+    }
+  ];
+
+  var root = document.getElementById("music");
+  if (!root || !window.H1024) return;
+  var $ = function(s){ return root.querySelector(s); };
+  var prev = $("[data-prev]"), next = $("[data-next]");
+  prev.innerHTML = H1024.icon.prev; next.innerHTML = H1024.icon.next;
+
+  var L = {
+    year:   {en:"Released", id:"Rilis"},
+    tracks: {en:"Tracks",   id:"Jumlah lagu"},
+    length: {en:"Length",   id:"Durasi"},
+    label:  {en:"Label",    id:"Label"},
+    listen: {en:"Listen everywhere", id:"Dengarkan di semua platform"}
+  };
+  var current = 0;
+
+  function render(i){
+    current = i;
+    var a = ALBUMS[i];
+    var img = $(".h-audio__art img");
+    img.src = a.artwork || "";
+    img.alt = a.artwork ? a.name + " — album artwork" : "";
+    $(".h-audio__fallback").textContent = a.name;
+    $(".h-audio__name").textContent = a.name;
+
+    $(".h-meta").innerHTML = ["year","tracks","length","label"].filter(function(k){ return a[k]; })
+      .map(function(k){ return "<dt>" + H1024.t(L[k]) + "</dt><dd>" + H1024.esc(a[k]) + "</dd>"; }).join("");
+
+    var link = $(".h-audio__listen a");
+    link.textContent = H1024.t(L.listen);
+    link.href = a.listen || ("https://open.spotify.com/album/" + a.spotify);
+    $(".h-audio__listen").hidden = !a.listen && !a.spotify;
+
+    var player = $(".h-audio__player");
+    var src = "https://open.spotify.com/embed/album/" + encodeURIComponent(a.spotify) + "?utm_source=generator&theme=0";
+    var frame = player.querySelector("iframe");
+    if (!a.spotify) { player.innerHTML = ""; return; }
+    if (!frame) {
+      player.innerHTML = '<iframe loading="lazy" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"></iframe>';
+      frame = player.querySelector("iframe");
+    }
+    frame.title = "Spotify — " + a.name;
+    if (frame.getAttribute("src") !== src) frame.setAttribute("src", src);
+  }
+
+  H1024.stepper({
+    prev: prev, next: next, status: $(".h-count"),
+    count: function(){ return ALBUMS.length; },
+    onChange: render,
+    swipe: $(".h-audio__art")
+  }).go(0);
+
+  H1024.onLang(function(){ render(current); });
+  H1024.applyStatic(root);
+})();
+</script>

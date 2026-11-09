@@ -1,0 +1,164 @@
+<!-- ============================================================
+  HINDIA 1024 — 07 POSTCARD FROM (blog / journal)
+  Where: its own page (see README) → one section → Code Block.
+  Data source:
+   - BLOG_PATH: a Squarespace Blog page on this site. The Postcards PAGE
+     uses /postcards, so give the blog its own URL slug, e.g. "/letters"
+     (hide it from navigation; posts open at /letters/post-name).
+     Posts are read automatically via Squarespace's ?format=json —
+     write a post, it shows up here. Featured image = postcard photo.
+     Tip: put the city in the post's first Tag (e.g. "Tokyo") and it
+     becomes the postmark.
+   - MANUAL: used if BLOG_PATH is empty or can't be read. Supports
+     "Surat Dari" YouTube videos: give youtube:"VIDEO_ID" instead of image/url.
+============================================================ -->
+<section class="h-sec h-post" id="postcards" aria-labelledby="h-post-title">
+  <div class="h-wrap">
+    <header class="h-head">
+      <div>
+        <h1 id="h-post-title" class="h-title" data-en="Postcard from" data-id="Surat dari">Postcard from</h1>
+        <p class="h-lede" data-en="Letters and dispatches from the road, written by Hindia."
+           data-id="Surat dan cerita dari perjalanan, ditulis Hindia.">Letters and dispatches from the road, written by Hindia.</p>
+      </div>
+      <div class="h-controls">
+        <button type="button" class="h-arrow" data-prev data-en-aria="Previous postcards" data-id-aria="Surat sebelumnya"></button>
+        <button type="button" class="h-arrow" data-next data-en-aria="More postcards" data-id-aria="Surat berikutnya"></button>
+      </div>
+    </header>
+    <ul class="h-post__row"></ul>
+  </div>
+</section>
+
+<style>
+.h-post__row{
+  list-style:none;margin:0;padding:8px 4px 24px;display:grid;grid-auto-flow:column;
+  grid-auto-columns:calc((100% - 2 * 28px) / 3);gap:28px;
+  overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;overscroll-behavior-x:contain;
+}
+.h-post__row::-webkit-scrollbar{display:none}
+.h-post__row > li{scroll-snap-align:start}
+.h-card{
+  position:relative;display:flex;flex-direction:column;height:100%;
+  background:var(--h-bg);color:var(--h-text);text-decoration:none;
+  padding:14px 14px 22px;box-shadow:0 1px 0 var(--h-line),0 18px 40px -28px color-mix(in srgb,var(--h-text) 55%,transparent);border:1px solid var(--h-line);
+  transition:transform .35s cubic-bezier(.2,.7,.2,1);
+}
+.h-post__row > li:nth-child(odd) .h-card{transform:rotate(-.6deg)}
+.h-post__row > li:nth-child(even) .h-card{transform:rotate(.5deg)}
+.h-post__row > li .h-card:hover,.h-post__row > li .h-card:focus-visible{transform:rotate(0) translateY(-4px)}
+.h-card__photo{aspect-ratio:3/2;background:var(--h-accent-soft);overflow:hidden;position:relative}
+.h-card__photo img{width:100%;height:100%;object-fit:cover}
+.h-card__photo .h-card__play{
+  position:absolute;left:12px;bottom:12px;width:44px;height:44px;border-radius:50%;background:var(--h-bg);color:var(--h-text);display:grid;place-items:center;
+}
+.h-card__photo .h-card__play svg{width:18px;height:18px;margin-left:2px}
+
+/* the back of the postcard */
+.h-card__back{position:relative;padding:64px 8px 0;flex:1;display:flex;flex-direction:column}
+.h-card__stamp{
+  position:absolute;right:6px;top:-26px;width:58px;height:70px;background:var(--h-bg);
+  padding:5px;
+  -webkit-mask:radial-gradient(circle 3.5px at 50% 0,transparent 98%,#000) 50% 0/9.6px 51% repeat-x,
+               radial-gradient(circle 3.5px at 50% 100%,transparent 98%,#000) 50% 100%/9.6px 51% repeat-x;
+          mask:radial-gradient(circle 3.5px at 50% 0,transparent 98%,#000) 50% 0/9.6px 51% repeat-x,
+               radial-gradient(circle 3.5px at 50% 100%,transparent 98%,#000) 50% 100%/9.6px 51% repeat-x;
+}
+.h-card__stamp i{
+  display:grid;place-items:center;height:100%;background:var(--h-accent);color:var(--h-bg);
+  font:var(--h-hs) var(--h-hw) 18px/1 var(--h-font-heading);
+}
+.h-card__mark{
+  position:absolute;right:44px;top:-10px;width:78px;height:78px;border-radius:50%;
+  border:1.5px solid var(--h-accent);color:var(--h-accent);opacity:.8;
+  display:grid;place-items:center;text-align:center;transform:rotate(-12deg);
+  font:600 10px/1.25 var(--h-font-body);padding:6px;pointer-events:none;
+}
+.h-card__title{font:var(--h-hs) var(--h-hw) clamp(22px,2vw,28px)/1.15 var(--h-font-heading);margin:0 0 10px}
+.h-card__excerpt{
+  margin:0 0 18px;font-family:var(--h-font-body);font-size:16px;line-height:1.65;color:var(--h-muted);
+  display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;
+  background:repeating-linear-gradient(transparent 0 calc(1.65em - 1px),var(--h-line) calc(1.65em - 1px) 1.65em);
+}
+.h-card__more{margin-top:auto;font-weight:600;font-size:14px;text-decoration:underline;text-underline-offset:4px}
+@media (max-width:1024px){.h-post__row{grid-auto-columns:46%}}
+@media (max-width:640px){.h-post__row{grid-auto-columns:84%}}
+</style>
+
+<script>
+(function(){
+  /* ---------- CONFIG ---------- */
+  var BLOG_PATH = "/letters";
+  var LIMIT = 9;
+  var MANUAL = [
+    /* Squarespace-free example (e.g. Surat Dari videos on YouTube):
+    { title:"Surat dari Tokyo", excerpt:"…", city:"Tokyo", date:"2026-06-16", youtube:"VIDEO_ID" },
+    { title:"…", excerpt:"…", city:"Kuala Lumpur", date:"2025-…", image:"https://…", url:"https://…" } */
+  ];
+
+  var root = document.getElementById("postcards");
+  if (!root || !window.H1024) return;
+  var row = root.querySelector(".h-post__row");
+  var prev = root.querySelector("[data-prev]"), next = root.querySelector("[data-next]");
+  prev.innerHTML = H1024.icon.prev; next.innerHTML = H1024.icon.next;
+  var L = { read:{en:"Read the letter", id:"Baca suratnya"}, watch:{en:"Watch the letter", id:"Tonton suratnya"},
+            empty:{en:"The first postcard is on its way.", id:"Surat pertama sedang dalam perjalanan."} };
+  var posts = [];
+
+  function stripHtml(h){ var d = document.createElement("div"); d.innerHTML = h || ""; return (d.textContent || "").trim(); }
+
+  function fromSquarespace(items){
+    return items.slice(0, LIMIT).map(function(it){
+      return {
+        title: it.title, excerpt: stripHtml(it.excerpt),
+        city: (it.tags || [])[0] || (it.location && it.location.addressTitle) || "",
+        date: it.publishOn || it.addedOn,
+        image: it.assetUrl ? it.assetUrl + "?format=750w" : "",
+        url: it.fullUrl
+      };
+    });
+  }
+
+  function render(){
+    if (!posts.length) { row.outerHTML = '<p class="h-empty">' + H1024.t(L.empty) + '</p>'; root.querySelector(".h-controls").hidden = true; return; }
+    row.innerHTML = posts.map(function(p){
+      var yt = p.youtube;
+      var url = yt ? "https://www.youtube.com/watch?v=" + encodeURIComponent(yt) : p.url;
+      var img = yt ? "https://i.ytimg.com/vi/" + encodeURIComponent(yt) + "/hqdefault.jpg" : p.image;
+      var d = p.date ? new Date(p.date) : null;
+      var dstr = d && !isNaN(d) ? d.toLocaleDateString(H1024.locale(), {day:"numeric", month:"short", year:"numeric"}) : "";
+      var ext = yt || /^https?:/.test(url || "") && url.indexOf(location.host) === -1;
+      return '<li><a class="h-card" href="' + H1024.esc(url || "#") + '"' + (ext ? ' target="_blank" rel="noopener"' : "") + '>' +
+        '<div class="h-card__photo">' + (img ? '<img loading="lazy" alt="" src="' + H1024.esc(img) + '">' : "") +
+          (yt ? '<span class="h-card__play">' + H1024.icon.play + '</span>' : "") + '</div>' +
+        '<div class="h-card__back">' +
+          '<span class="h-card__stamp" aria-hidden="true"><i>h</i></span>' +
+          ((p.city || dstr) ? '<span class="h-card__mark" aria-hidden="true">' + H1024.esc(p.city) + (p.city && dstr ? "<br>" : "") + H1024.esc(dstr) + '</span>' : "") +
+          '<h3 class="h-card__title">' + H1024.esc(p.title) + '</h3>' +
+          (p.excerpt ? '<p class="h-card__excerpt">' + H1024.esc(p.excerpt) + '</p>' : "") +
+          '<span class="h-card__more">' + H1024.t(yt ? L.watch : L.read) + '</span>' +
+        '</div></a></li>';
+    }).join("");
+    syncArrows();
+  }
+
+  function syncArrows(){
+    prev.disabled = row.scrollLeft <= 2;
+    next.disabled = row.scrollLeft + row.clientWidth >= row.scrollWidth - 2;
+  }
+  prev.addEventListener("click", function(){ row.scrollBy({left:-row.clientWidth * .9, behavior:"smooth"}); });
+  next.addEventListener("click", function(){ row.scrollBy({left: row.clientWidth * .9, behavior:"smooth"}); });
+  row.addEventListener("scroll", syncArrows, {passive:true});
+  window.addEventListener("resize", syncArrows);
+
+  function useManual(){ posts = MANUAL.slice(0, LIMIT); render(); }
+  if (BLOG_PATH) {
+    fetch(BLOG_PATH + "?format=json", {credentials:"same-origin"})
+      .then(function(r){ if (!r.ok) throw new Error(r.status); return r.json(); })
+      .then(function(d){ posts = fromSquarespace(d.items || []); if (!posts.length) return useManual(); render(); })
+      .catch(function(err){ console.warn("[h1024] postcards:", err); useManual(); });
+  } else useManual();
+
+  H1024.onLang(function(){ if (posts.length) render(); });
+  H1024.applyStatic(root);
+})();
+</script>

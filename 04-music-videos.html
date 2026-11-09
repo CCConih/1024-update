@@ -1,0 +1,118 @@
+<!-- ============================================================
+  HINDIA 1024 — 04 MUSIC VIDEOS (video catalogue)
+  Where: its own page (see README) → one section → Code Block.
+  EDIT: VIDEOS list — newest first. id = the part after watch?v=
+  Thumbnails load from YouTube; the real player only loads on click
+  (keeps the page fast — each full YT embed is ~1 MB of script).
+============================================================ -->
+<section class="h-sec h-vid" id="videos" aria-labelledby="h-vid-title">
+  <div class="h-wrap">
+    <header class="h-head">
+      <h1 id="h-vid-title" class="h-title" data-en="Music videos" data-id="Video musik">Music videos</h1>
+      <div class="h-controls">
+        <span class="h-count" aria-hidden="true"></span>
+        <button type="button" class="h-arrow" data-prev data-en-aria="Previous videos" data-id-aria="Video sebelumnya"></button>
+        <button type="button" class="h-arrow" data-next data-en-aria="Next videos" data-id-aria="Video berikutnya"></button>
+      </div>
+    </header>
+    <div class="h-vid__viewport">
+      <ul class="h-vid__track"></ul>
+    </div>
+    <p class="h-vid__more"><a class="h-link" href="YOUTUBE_CHANNEL_URL" target="_blank" rel="noopener"
+       data-en="All videos on YouTube" data-id="Semua video di YouTube">All videos on YouTube</a></p>
+  </div>
+</section>
+
+<style>
+.h-vid__viewport{overflow:hidden}
+.h-vid__track{
+  --per:2;--gap:clamp(16px,2.5vw,32px);
+  list-style:none;margin:0;padding:0;display:flex;gap:var(--gap);position:relative;
+  transition:transform .5s cubic-bezier(.2,.7,.2,1);
+}
+.h-vid__item{flex:0 0 calc((100% - (var(--per) - 1) * var(--gap)) / var(--per))}
+.h-vid__frame{position:relative;aspect-ratio:16/9;background:#000;overflow:hidden}
+.h-vid__frame img,.h-vid__frame iframe{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border:0}
+.h-vid__play{
+  position:absolute;inset:0;width:100%;border:0;padding:0;background:transparent;cursor:pointer;color:var(--h-bg);
+}
+.h-vid__play span{
+  position:absolute;left:20px;bottom:20px;width:64px;height:64px;border-radius:50%;
+  background:var(--h-bg);color:var(--h-text);display:grid;place-items:center;transition:transform .2s;
+}
+.h-vid__play span svg{width:24px;height:24px;margin-left:3px}
+.h-vid__play:hover span{transform:scale(1.08)}
+.h-vid__title{font:var(--h-hs) var(--h-hw) clamp(20px,2vw,26px)/1.2 var(--h-font-heading);margin:16px 0 4px}
+.h-vid__sub{margin:0;font-size:14px;opacity:.65}
+.h-vid__more{margin:40px 0 0}
+@media (max-width:760px){.h-vid__track{--per:1}}
+</style>
+
+<script>
+(function(){
+  /* ---------- CONFIG: newest first ---------- */
+  var VIDEOS = [
+    { id: "YOUTUBE_ID_1", title: "Song title", sub: {en:"Official music video", id:"Video musik resmi"} },
+    { id: "YOUTUBE_ID_2", title: "Song title", sub: {en:"Official music video", id:"Video musik resmi"} },
+    { id: "YOUTUBE_ID_3", title: "Song title", sub: {en:"Official music video", id:"Video musik resmi"} },
+    { id: "YOUTUBE_ID_4", title: "Song title", sub: {en:"Official music video", id:"Video musik resmi"} }
+  ];
+
+  var root = document.getElementById("videos");
+  if (!root || !window.H1024) return;
+  var track = root.querySelector(".h-vid__track");
+  var prev = root.querySelector("[data-prev]"), next = root.querySelector("[data-next]");
+  prev.innerHTML = H1024.icon.prev; next.innerHTML = H1024.icon.next;
+  var PLAY = {en:"Play", id:"Putar"};
+
+  function build(){
+    track.innerHTML = VIDEOS.map(function(v, i){
+      var t = H1024.esc(v.title);
+      return '<li class="h-vid__item" data-i="' + i + '">' +
+        '<div class="h-vid__frame">' +
+          '<img loading="lazy" alt="" src="https://i.ytimg.com/vi/' + encodeURIComponent(v.id) + '/maxresdefault.jpg">' +
+          '<button type="button" class="h-vid__play" aria-label="' + H1024.t(PLAY) + ': ' + t + '"><span>' + H1024.icon.play + '</span></button>' +
+        '</div>' +
+        '<h3 class="h-vid__title">' + t + '</h3>' +
+        '<p class="h-vid__sub">' + H1024.esc(H1024.t(v.sub)) + '</p>' +
+      '</li>';
+    }).join("");
+    /* some older videos have no maxres thumbnail → fall back */
+    track.querySelectorAll("img").forEach(function(img){
+      img.addEventListener("error", function(){ if (img.src.indexOf("maxres") > -1) img.src = img.src.replace("maxresdefault","hqdefault"); }, {once:true});
+    });
+  }
+
+  track.addEventListener("click", function(e){
+    var btn = e.target.closest(".h-vid__play");
+    if (!btn) return;
+    /* stop any other playing video */
+    track.querySelectorAll("iframe").forEach(function(f){ build1(f.closest(".h-vid__item")); });
+    var li = btn.closest(".h-vid__item");
+    var v = VIDEOS[+li.getAttribute("data-i")];
+    li.querySelector(".h-vid__frame").innerHTML =
+      '<iframe src="https://www.youtube-nocookie.com/embed/' + encodeURIComponent(v.id) + '?autoplay=1&rel=0" title="' + H1024.esc(v.title) + '" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe>';
+  });
+  function build1(li){
+    var v = VIDEOS[+li.getAttribute("data-i")];
+    li.querySelector(".h-vid__frame").innerHTML =
+      '<img loading="lazy" alt="" src="https://i.ytimg.com/vi/' + encodeURIComponent(v.id) + '/hqdefault.jpg">' +
+      '<button type="button" class="h-vid__play" aria-label="' + H1024.t(PLAY) + ': ' + H1024.esc(v.title) + '"><span>' + H1024.icon.play + '</span></button>';
+  }
+
+  function perView(){ return window.matchMedia("(max-width:760px)").matches ? 1 : 2; }
+  build();
+  var step = H1024.stepper({
+    prev: prev, next: next, status: root.querySelector(".h-count"),
+    count: function(){ return VIDEOS.length; }, perView: perView, swipe: track,
+    onChange: function(i){
+      var item = track.children[i];
+      track.style.transform = item ? "translateX(" + (-item.offsetLeft) + "px)" : "";
+    }
+  });
+  step.go(0);
+
+  H1024.onLang(function(){ build(); step.go(step.index); });
+  H1024.applyStatic(root);
+})();
+</script>

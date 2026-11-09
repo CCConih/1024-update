@@ -1,0 +1,144 @@
+<!-- ============================================================
+  HINDIA 1024 — 08 NEWS + PRESS KIT
+  Where: its own page (see README) → one section → Code Block.
+  EDIT: PRESS list (newest first), PRESS_KIT object, ARCHIVE_URL.
+  Press items page 3 at a time with the arrows — journalists scan lists,
+  so the latest three are always visible without clicking.
+============================================================ -->
+<section class="h-sec h-news" id="news" aria-labelledby="h-news-title">
+  <div class="h-wrap">
+    <header class="h-head">
+      <h1 id="h-news-title" class="h-title" data-en="News" data-id="Berita">News</h1>
+      <div class="h-controls">
+        <span class="h-count" aria-hidden="true"></span>
+        <button type="button" class="h-arrow" data-prev data-en-aria="Newer articles" data-id-aria="Berita lebih baru"></button>
+        <button type="button" class="h-arrow" data-next data-en-aria="Older articles" data-id-aria="Berita lebih lama"></button>
+      </div>
+    </header>
+
+    <div class="h-news__grid">
+      <div>
+        <ol class="h-news__list" aria-live="polite"></ol>
+        <p class="h-news__archive"><a class="h-link" href="ARCHIVE_URL" data-en="Press archive" data-id="Arsip pers">Press archive</a></p>
+      </div>
+
+      <aside class="h-kit" aria-labelledby="h-kit-title">
+        <div class="h-kit__img"><img alt="" loading="lazy"></div>
+        <div class="h-kit__body">
+          <h3 id="h-kit-title" class="h-kit__title" data-en="Press kit" data-id="Press kit">Press kit</h3>
+          <p class="h-kit__note"></p>
+          <div class="h-kit__actions"></div>
+          <p class="h-kit__contact"></p>
+        </div>
+      </aside>
+    </div>
+  </div>
+</section>
+
+<style>
+.h-news__grid{display:grid;grid-template-columns:minmax(0,7fr) minmax(0,4fr);gap:clamp(32px,5vw,72px);align-items:start}
+.h-news__list{list-style:none;margin:0;padding:0;min-height:420px}
+.h-news__item{display:grid;grid-template-columns:140px minmax(0,1fr);gap:24px;padding:24px 0;border-bottom:1px solid var(--h-line)}
+.h-news__item:first-child{padding-top:0}
+.h-news__thumb{aspect-ratio:4/3;background:var(--h-bg-2);overflow:hidden}
+.h-news__thumb img{width:100%;height:100%;object-fit:cover}
+.h-news__src{margin:0 0 6px;font-size:14px;color:var(--h-muted)}
+.h-news__title{font:var(--h-hs) var(--h-hw) clamp(20px,1.9vw,24px)/1.25 var(--h-font-heading);margin:0 0 10px}
+.h-news__title a{color:inherit;text-decoration:none}
+.h-news__title a:hover{text-decoration:underline;text-underline-offset:4px;text-decoration-thickness:1px}
+.h-news__links{display:flex;gap:18px;flex-wrap:wrap;font-size:14px}
+.h-news__archive{margin:28px 0 0}
+
+.h-kit{background:var(--h-bg-2);color:var(--h-heading);position:sticky;top:calc(var(--h-header) + 24px)}
+.h-kit__img{aspect-ratio:4/5;background:var(--h-accent-soft);overflow:hidden}
+.h-kit__img img{width:100%;height:100%;object-fit:cover}
+.h-kit__body{padding:28px}
+.h-kit__title{font:var(--h-hs) var(--h-hw) 34px/1 var(--h-font-heading);margin:0 0 10px}
+.h-kit__note{margin:0 0 22px;font-size:15px;color:var(--h-muted)}
+.h-kit__actions{display:flex;flex-direction:column;gap:10px}
+.h-kit__actions .h-btn{justify-content:space-between}
+.h-kit__contact{margin:22px 0 0;font-size:14px;color:var(--h-muted)}
+.h-kit__contact a{color:inherit}
+@media (max-width:900px){
+  .h-news__grid{grid-template-columns:1fr}
+  .h-kit{position:static;display:grid;grid-template-columns:1fr 1.3fr}
+  .h-kit__img{aspect-ratio:auto;min-height:100%}
+  .h-news__list{min-height:0}
+}
+@media (max-width:560px){
+  .h-kit{grid-template-columns:1fr}
+  .h-kit__img{aspect-ratio:4/3}
+  .h-news__item{grid-template-columns:96px minmax(0,1fr);gap:16px}
+}
+</style>
+
+<script>
+(function(){
+  /* ---------- CONFIG ---------- */
+  var PER_PAGE = 3;
+  var PRESS = [
+    /* outlet, year, title, url (article), image, download (PDF clipping), asset (photos used) */
+    { outlet:"Outlet name", year:"2026", title:"Article headline", url:"https://…", image:"", download:"", asset:"" },
+    { outlet:"Outlet name", year:"2026", title:"Article headline", url:"https://…", image:"", download:"", asset:"" },
+    { outlet:"Outlet name", year:"2025", title:"Article headline", url:"https://…", image:"", download:"", asset:"" },
+    { outlet:"Outlet name", year:"2025", title:"Article headline", url:"https://…", image:"", download:"", asset:"" }
+  ];
+  var PRESS_KIT = {
+    image: "",
+    note: { en:"Bio, fact sheet and approved photos with credits.", id:"Bio, fact sheet, dan foto resmi beserta kreditnya." },
+    files: [
+      { label:{en:"Download press kit (PDF)", id:"Unduh press kit (PDF)"}, url:"" },
+      { label:{en:"Download photos (ZIP)", id:"Unduh foto (ZIP)"}, url:"" }
+    ],
+    contact: "press@example.com"   /* press / management email */
+  };
+
+  var root = document.getElementById("news");
+  if (!root || !window.H1024) return;
+  var $ = function(s){ return root.querySelector(s); };
+  var prev = $("[data-prev]"), next = $("[data-next]");
+  prev.innerHTML = H1024.icon.prev; next.innerHTML = H1024.icon.next;
+  var L = { read:{en:"Read article", id:"Baca artikel"}, dl:{en:"Download clipping", id:"Unduh kliping"},
+            asset:{en:"Photos used", id:"Foto yang dipakai"}, contact:{en:"Press enquiries: ", id:"Kontak media: "} };
+  var pageIndex = 0;
+
+  function renderList(pg){
+    pageIndex = pg;
+    var slice = PRESS.slice(pg * PER_PAGE, pg * PER_PAGE + PER_PAGE);
+    $(".h-news__list").innerHTML = slice.map(function(p){
+      var links = [];
+      if (p.url) links.push('<a class="h-link" href="' + H1024.esc(p.url) + '" target="_blank" rel="noopener">' + H1024.t(L.read) + '</a>');
+      if (p.download) links.push('<a class="h-link" href="' + H1024.esc(p.download) + '" target="_blank" rel="noopener" download>' + H1024.t(L.dl) + '</a>');
+      if (p.asset) links.push('<a class="h-link" href="' + H1024.esc(p.asset) + '" target="_blank" rel="noopener">' + H1024.t(L.asset) + '</a>');
+      return '<li class="h-news__item">' +
+        '<div class="h-news__thumb">' + (p.image ? '<img loading="lazy" alt="" src="' + H1024.esc(p.image) + '">' : "") + '</div>' +
+        '<div><p class="h-news__src">' + H1024.esc(p.outlet) + ", " + H1024.esc(p.year) + '</p>' +
+        '<h3 class="h-news__title">' + (p.url ? '<a href="' + H1024.esc(p.url) + '" target="_blank" rel="noopener">' + H1024.esc(p.title) + '</a>' : H1024.esc(p.title)) + '</h3>' +
+        '<div class="h-news__links">' + links.join("") + '</div></div></li>';
+    }).join("");
+  }
+
+  function renderKit(){
+    var img = $(".h-kit__img img");
+    if (PRESS_KIT.image) img.src = PRESS_KIT.image; else $(".h-kit__img").hidden = true;
+    $(".h-kit__note").textContent = H1024.t(PRESS_KIT.note);
+    $(".h-kit__actions").innerHTML = PRESS_KIT.files.filter(function(f){ return f.url; }).map(function(f){
+      return '<a class="h-btn" href="' + H1024.esc(f.url) + '" target="_blank" rel="noopener" download>' +
+        H1024.esc(H1024.t(f.label)) + '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M12 4v12m0 0l-5-5m5 5l5-5M5 20h14"/></svg></a>';
+    }).join("");
+    $(".h-kit__contact").innerHTML = PRESS_KIT.contact
+      ? H1024.t(L.contact) + '<a href="mailto:' + H1024.esc(PRESS_KIT.contact) + '">' + H1024.esc(PRESS_KIT.contact) + '</a>' : "";
+  }
+
+  var pages = Math.ceil(PRESS.length / PER_PAGE);
+  var step = H1024.stepper({
+    prev: prev, next: next, status: $(".h-count"),
+    count: function(){ return pages; }, onChange: renderList
+  });
+  step.go(0);
+  renderKit();
+
+  H1024.onLang(function(){ renderList(pageIndex); renderKit(); });
+  H1024.applyStatic(root);
+})();
+</script>

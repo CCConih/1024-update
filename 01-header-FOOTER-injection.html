@@ -1,0 +1,196 @@
+<!-- ============================================================
+  HINDIA 1024 — 01 HEADER BAR + WINDOW FRAME + DROP MENU + EN/ID TOGGLE
+  Where: Settings → Advanced → Code Injection → FOOTER
+  (Squarespace headers can't hold code blocks, so this is injected
+   and moved to the top of <body>. It hides the native header.)
+  Multi-page: the menu links to separate pages (/music, /videos, ...).
+  Look: the logo sits in a tab that hangs from the top bar into the
+  rounded "window"; the menu runs along the top right. On phones the
+  menu collapses into the Menu button. Colours/fonts: :root in 00.
+
+  EDIT: the logo <img> src (optional), and the 1024 link.
+  Tip: upload logos as SVG/PNG via any image block, copy the
+  image URL (images.squarespace-cdn.com/...), paste below.
+============================================================ -->
+<header id="h-header" class="h-hdr h-themed">
+  <a class="h-hdr__tab" href="/" aria-label="Hindia — home">
+    <!-- <img src="LOGO_HINDIA_URL" alt=""> -->
+    <span class="h-hdr__mark">hindia</span>
+  </a>
+
+  <nav class="h-hdr__nav" aria-label="Site">
+    <a href="/music"     data-en="Music"     data-id="Musik">Music</a>
+    <a href="/videos"    data-en="Videos"    data-id="Video">Videos</a>
+    <a href="/shows"     data-en="Shows"     data-id="Manggung">Shows</a>
+    <a href="/merch"     data-en="Merch"     data-id="Merch">Merch</a>
+    <a href="/postcards" data-en="Postcards" data-id="Surat dari">Postcards</a>
+    <a href="/news"      data-en="News"      data-id="Berita">News</a>
+    <a href="/about"     data-en="About"     data-id="Tentang">About</a>
+  </nav>
+
+  <div class="h-hdr__right">
+    <a class="h-hdr__1024" href="https://www.instagram.com/sepuluhduaempat/" target="_blank" rel="noopener" aria-label="1024 (sepuluhduaempat)">
+      <!-- <img src="LOGO_1024_URL" alt=""> -->
+      <span>1024</span>
+    </a>
+    <div class="h-lang" role="group" aria-label="Language">
+      <button type="button" data-lang="en" aria-pressed="false">EN</button>
+      <button type="button" data-lang="id" aria-pressed="false">ID</button>
+    </div>
+    <button type="button" class="h-hdr__menu" aria-expanded="false" aria-controls="h-menu">
+      <span data-en="Menu" data-id="Menu">Menu</span>
+    </button>
+  </div>
+</header>
+<div class="h-frame" aria-hidden="true"></div>
+
+<div id="h-menu" class="h-menu h-themed" hidden>
+  <nav aria-label="Site (menu)">
+    <ol class="h-menu__list">
+      <li><a href="/music"     data-en="Music"        data-id="Musik">Music</a></li>
+      <li><a href="/videos"    data-en="Videos"       data-id="Video">Videos</a></li>
+      <li><a href="/shows"     data-en="Shows"        data-id="Jadwal manggung">Shows</a></li>
+      <li><a href="/merch"     data-en="Merch"        data-id="Merchandise">Merch</a></li>
+      <li><a href="/postcards" data-en="Postcards"    data-id="Surat dari">Postcards</a></li>
+      <li><a href="/news"      data-en="News & press" data-id="Berita & pers">News &amp; press</a></li>
+      <li><a href="/about"     data-en="About"        data-id="Tentang">About</a></li>
+    </ol>
+  </nav>
+  <div class="h-menu__foot">
+    <button type="button" class="h-btn" data-open-guestbook data-en="Sign the guest book" data-id="Isi buku tamu">Sign the guest book</button>
+    <button type="button" class="h-menu__close" data-en="Close" data-id="Tutup">Close</button>
+  </div>
+</div>
+
+<style>
+.h-hdr{
+  position:fixed;inset:0 0 auto 0;z-index:999;height:var(--h-header);
+  display:flex;align-items:center;gap:24px;
+  padding-right:calc(var(--hx-fw) + 14px);
+  background:var(--hx-frame);color:var(--hx-heading);
+  font:500 13px/1 var(--hx-font);letter-spacing:.06em;text-transform:uppercase;
+}
+.h-hdr a{color:inherit;text-decoration:none}
+
+/* logo tab hanging into the window, with concave corners on both sides */
+.h-hdr__tab{
+  align-self:flex-start;position:relative;flex-shrink:0;
+  height:calc(var(--h-header) + var(--hx-tab-drop));
+  display:flex;align-items:center;
+  padding:0 26px 0 calc(var(--hx-fw) + 18px);
+  background:var(--hx-frame);border-bottom-right-radius:var(--hx-fr);
+}
+.h-hdr__tab::before,.h-hdr__tab::after{
+  content:"";position:absolute;width:var(--hx-fr);height:var(--hx-fr);
+  background:radial-gradient(circle at 100% 100%,transparent calc(var(--hx-fr) - .5px),var(--hx-frame) var(--hx-fr));
+}
+.h-hdr__tab::before{left:var(--hx-fw);top:100%}
+.h-hdr__tab::after{left:100%;top:var(--h-header)}
+.h-hdr__tab img,.h-hdr__tab svg{height:30px;width:auto;display:block}
+.h-hdr__mark{font:800 30px/1 var(--hx-font);letter-spacing:-.01em;text-transform:none}
+
+.h-hdr__nav{display:flex;gap:clamp(14px,1.8vw,26px);margin-left:auto}
+.h-hdr__nav a{padding:6px 0;border-bottom:2px solid transparent;transition:border-color .2s}
+.h-hdr__nav a:hover,.h-hdr__nav a[aria-current="page"]{border-bottom-color:currentColor}
+.h-hdr__right{display:flex;align-items:center;gap:16px}
+.h-hdr__1024{font-weight:700}
+.h-hdr__1024 img{height:18px;width:auto;display:block}
+.h-lang{display:flex;border:1px solid color-mix(in srgb,currentColor 35%,transparent);border-radius:999px;padding:2px}
+.h-lang button{
+  font:inherit;font-size:11px;font-weight:700;color:inherit;background:none;border:0;
+  padding:6px 9px;border-radius:999px;cursor:pointer;
+}
+.h-lang button[aria-pressed="true"]{background:var(--hx-heading);color:var(--hx-frame)}
+.h-hdr__menu{
+  display:none;font:inherit;font-weight:700;color:inherit;cursor:pointer;
+  background:none;border:1px solid color-mix(in srgb,currentColor 35%,transparent);border-radius:999px;padding:9px 14px;
+}
+
+.h-menu{
+  position:fixed;inset:0;z-index:1000;color:var(--hx-heading);
+  /* frosted glass: the page shows through, blurred */
+  background:color-mix(in srgb,var(--hx-frame) 78%,transparent);-webkit-backdrop-filter:blur(15px);backdrop-filter:blur(15px);
+  display:flex;flex-direction:column;justify-content:space-between;
+  padding:calc(var(--h-header) + var(--hx-tab-drop) + 24px) var(--h-gutter) 40px;overflow-y:auto;
+  font-family:var(--hx-font);
+}
+.h-menu[hidden]{display:none}
+.h-menu__list{list-style:none;margin:0;padding:0}
+.h-menu__list a{
+  display:block;color:inherit;text-decoration:none;text-transform:uppercase;
+  font:800 clamp(36px,9vw,72px)/1.04 var(--hx-font);letter-spacing:-.01em;padding:4px 0;
+}
+.h-menu__list a:hover,.h-menu__list a[aria-current="page"]{color:var(--hx-accent)}
+.h-menu__foot{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-top:40px;flex-wrap:wrap}
+.h-menu__close{background:none;border:0;color:inherit;font:700 13px/1 var(--hx-font);letter-spacing:.06em;text-transform:uppercase;cursor:pointer;text-decoration:underline;text-underline-offset:4px}
+body.h-menu-open{overflow:hidden}
+
+@media (max-width:1020px){
+  .h-hdr__nav{display:none}
+  .h-hdr__right{margin-left:auto}
+  .h-hdr__menu{display:block}
+}
+@media (max-width:640px){
+  .h-hdr__mark{font-size:24px}
+  .h-hdr__tab{padding-right:18px}
+  .h-hdr__right{gap:10px}
+  .h-hdr__1024{display:none}
+}
+</style>
+
+<script>
+(function(){
+  var hdr = document.getElementById("h-header");
+  var menu = document.getElementById("h-menu");
+  var frame = document.querySelector(".h-frame");
+  if (!hdr || !window.H1024) return;
+  document.body.prepend(frame);
+  document.body.prepend(menu);
+  document.body.prepend(hdr);
+
+  /* loader (drawn by CSS in 00): fade it once the font is in, without waiting
+     for embeds and images, so moving between pages stays quick */
+  function ready(){ document.body.classList.add("h-ready"); }
+  if (document.fonts) document.fonts.ready.then(ready); else ready();
+
+  /* mark the page you're on */
+  var here = location.pathname.replace(/\/$/, "");
+  [hdr, menu].forEach(function(root){
+    root.querySelectorAll(".h-hdr__nav a, .h-menu__list a").forEach(function(a){
+      if (a.pathname.replace(/\/$/, "") === here) a.setAttribute("aria-current", "page");
+    });
+  });
+
+  /* language toggle */
+  var langBtns = hdr.querySelectorAll("[data-lang]");
+  function syncLang(l){
+    langBtns.forEach(function(b){ b.setAttribute("aria-pressed", String(b.getAttribute("data-lang") === l)); });
+  }
+  langBtns.forEach(function(b){
+    b.addEventListener("click", function(){ H1024.setLang(b.getAttribute("data-lang")); });
+  });
+  H1024.onLang(syncLang);
+  syncLang(H1024.lang);
+
+  /* drop menu (phones / narrow screens) */
+  var toggle = hdr.querySelector(".h-hdr__menu");
+  function openMenu(){
+    menu.hidden = false;
+    toggle.setAttribute("aria-expanded","true");
+    document.body.classList.add("h-menu-open");
+    menu.querySelector("a").focus();
+  }
+  function closeMenu(){
+    menu.hidden = true;
+    toggle.setAttribute("aria-expanded","false");
+    document.body.classList.remove("h-menu-open");
+  }
+  toggle.addEventListener("click", function(){ menu.hidden ? openMenu() : closeMenu(); });
+  menu.querySelector(".h-menu__close").addEventListener("click", function(){ closeMenu(); toggle.focus(); });
+  menu.addEventListener("click", function(e){ if (e.target.closest("a, [data-open-guestbook]")) closeMenu(); });
+  document.addEventListener("keydown", function(e){ if (e.key === "Escape" && !menu.hidden){ closeMenu(); toggle.focus(); } });
+
+  H1024.applyStatic(hdr);
+  H1024.applyStatic(menu);
+})();
+</script>

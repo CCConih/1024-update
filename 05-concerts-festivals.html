@@ -1,0 +1,249 @@
+<!-- ============================================================
+  HINDIA 1024 — 05 CONCERTS & FESTIVALS (concert calendar)
+  Where: its own page (see README) → one section → Code Block.
+  Data source, in order:
+   1. Bandsintown API  → set BIT_APP_ID (get it in Bandsintown for Artists:
+      Settings → "Get API key / app_id" for this artist)
+   2. MANUAL_EVENTS    → used if no app_id, or the API fails
+   3. Official Bandsintown widget → if both are empty and USE_WIDGET_FALLBACK
+  The arrows move month by month; the calendar and list stay in sync.
+============================================================ -->
+<section class="h-sec h-shows" id="shows" aria-labelledby="h-shows-title">
+  <div class="h-wrap">
+    <header class="h-head">
+      <h1 id="h-shows-title" class="h-title" data-en="Concerts & festivals" data-id="Konser & festival">Concerts &amp; festivals</h1>
+      <div class="h-controls">
+        <span class="h-shows__month" aria-live="polite"></span>
+        <button type="button" class="h-arrow" data-prev data-en-aria="Previous month" data-id-aria="Bulan sebelumnya"></button>
+        <button type="button" class="h-arrow" data-next data-en-aria="Next month" data-id-aria="Bulan berikutnya"></button>
+      </div>
+    </header>
+
+    <div class="h-shows__grid">
+      <ol class="h-shows__list"></ol>
+      <div class="h-shows__cal" aria-hidden="true">
+        <div class="h-shows__dow"></div>
+        <div class="h-shows__days"></div>
+      </div>
+    </div>
+    <div class="h-shows__widget"></div>
+  </div>
+</section>
+
+<style>
+.h-shows__month{font:var(--h-hs) var(--h-hw) 22px/1 var(--h-font-heading);min-width:9ch;text-align:right}
+.h-shows__grid{display:grid;grid-template-columns:minmax(0,7fr) minmax(0,5fr);gap:clamp(32px,5vw,72px);align-items:start}
+.h-shows__list{list-style:none;margin:0;padding:0}
+.h-show{
+  display:grid;grid-template-columns:5.5em minmax(0,1fr) auto;gap:20px;align-items:center;
+  padding:22px 0;border-bottom:1px solid var(--h-line);scroll-margin-top:calc(var(--h-header) + 20px);
+}
+.h-show:first-child{border-top:1px solid var(--h-line)}
+.h-show[data-flash]{background:linear-gradient(90deg,var(--h-accent-soft),transparent)}
+.h-show__date{font-variant-numeric:tabular-nums;line-height:1.1}
+.h-show__date b{display:block;font:var(--h-hs) var(--h-hw) 40px/1 var(--h-font-heading);}
+.h-show__date span{font-size:14px;color:var(--h-muted)}
+.h-show__name{font:var(--h-hs) var(--h-hw) 22px/1.2 var(--h-font-heading);margin:0 0 4px;}
+.h-show__place{margin:0;font-size:15px;color:var(--h-muted)}
+.h-show__cta{white-space:nowrap}
+.h-show__cta .h-btn{padding:12px 18px;font-size:14px}
+.h-show__cta .h-btn[data-live]{background:var(--h-accent);border-color:var(--h-accent);color:var(--h-bg)}
+.h-show__cta .h-btn[data-live]:hover{background:transparent;color:var(--h-accent)}
+.h-show__soldout{font-size:14px;color:var(--h-muted)}
+
+.h-shows__cal{background:var(--h-bg-2);padding:24px;border:1px solid var(--h-line)}
+.h-shows__dow,.h-shows__days{display:grid;grid-template-columns:repeat(7,1fr);text-align:center}
+.h-shows__dow{font-size:12px;color:var(--h-muted);padding-bottom:10px;border-bottom:1px solid var(--h-line);margin-bottom:8px}
+.h-shows__days span,.h-shows__days button{
+  aspect-ratio:1;display:grid;place-items:center;font:400 15px/1 var(--h-font-body);font-variant-numeric:tabular-nums;
+  color:var(--h-muted);border:0;background:none;padding:0;
+}
+.h-shows__days button{
+  color:var(--h-btn-text);background:var(--h-btn-bg);border-radius:50%;cursor:pointer;font-weight:600;margin:3px;
+}
+.h-shows__days button:hover{background:var(--h-accent);color:var(--h-bg)}
+.h-shows__days .is-today{box-shadow:inset 0 0 0 1px var(--h-text);border-radius:50%}
+@media (max-width:900px){
+  .h-shows__grid{grid-template-columns:1fr}
+  .h-shows__cal{order:-1}
+}
+@media (max-width:560px){
+  .h-show{grid-template-columns:4.5em minmax(0,1fr)}
+  .h-show__cta{grid-column:2}
+  .h-shows__cal{padding:14px}
+}
+</style>
+
+<script>
+(function(){
+  /* ---------- CONFIG ---------- */
+  var ARTIST = "Hindia";              /* exact Bandsintown artist name, or "id_12345" */
+  var BIT_APP_ID = "";                /* from Bandsintown for Artists */
+  var USE_WIDGET_FALLBACK = true;
+  /* date: "YYYY-MM-DD" (venue local date) */
+  var MANUAL_EVENTS = [
+    /* { date:"2026-11-14", name:"Festival name", venue:"Venue", city:"Jakarta", country:"Indonesia", ticket:"https://…", soldOut:false } */
+  ];
+
+  var root = document.getElementById("shows");
+  if (!root || !window.H1024) return;
+  var $ = function(s){ return root.querySelector(s); };
+  var prev = $("[data-prev]"), next = $("[data-next]");
+  prev.innerHTML = H1024.icon.prev; next.innerHTML = H1024.icon.next;
+  var L = {
+    tickets:{en:"Tickets", id:"Tiket"},
+    info:{en:"Details", id:"Detail"},
+    sold:{en:"Sold out", id:"Tiket habis"},
+    none:{en:"No shows this month.", id:"Belum ada jadwal bulan ini."},
+    empty:{en:"No shows announced yet — sign the guest book to hear first.", id:"Belum ada jadwal — isi buku tamu supaya kamu tahu duluan."}
+  };
+
+  var events = [];     /* normalised: {y,m,d,key,name,venue,place,ticket,soldOut} */
+  var months = [];     /* ["2026-10", ...] months that have events */
+  var mi = 0;
+
+  function norm(e){
+    var p = e.date.split("-");
+    return {
+      y:+p[0], m:+p[1], d:+p[2], key:e.date,
+      name:e.name || e.venue, venue:e.venue || "",
+      place:[e.city, e.country].filter(Boolean).join(", "),
+      ticket:e.ticket || "", soldOut:!!e.soldOut, info:e.info || ""
+    };
+  }
+  function fromBit(list){
+    return list.map(function(ev){
+      var v = ev.venue || {};
+      var offer = (ev.offers || []).filter(function(o){ return /ticket/i.test(o.type || ""); })[0] || {};
+      return norm({
+        date: String(ev.datetime || ev.starts_at || "").slice(0,10),
+        name: ev.title || (ev.festival_start_date ? v.name : "") || v.name,
+        venue: v.name, city: v.city, country: v.country,
+        ticket: offer.url || "", soldOut: /sold/i.test(offer.status || ""), info: ev.url
+      });
+    });
+  }
+
+  function monthLabel(key){
+    var p = key.split("-");
+    return new Date(+p[0], +p[1]-1, 1).toLocaleDateString(H1024.locale(), {month:"long", year:"numeric"});
+  }
+
+  function renderMonth(){
+    var key = months[mi];
+    $(".h-shows__month").textContent = monthLabel(key);
+    var y = +key.split("-")[0], m = +key.split("-")[1];
+    var list = events.filter(function(e){ return e.y === y && e.m === m; });
+
+    /* list */
+    $(".h-shows__list").innerHTML = list.length ? list.map(function(e){
+      var dt = new Date(e.y, e.m-1, e.d);
+      var wd = dt.toLocaleDateString(H1024.locale(), {weekday:"short"});
+      var mo = dt.toLocaleDateString(H1024.locale(), {month:"short"});
+      var cta = e.soldOut ? '<span class="h-show__soldout">' + H1024.t(L.sold) + '</span>'
+        : e.ticket ? '<a class="h-btn" data-live href="' + H1024.esc(e.ticket) + '" target="_blank" rel="noopener">' + H1024.t(L.tickets) + '</a>'
+        : e.info ? '<a class="h-btn h-btn--ghost" href="' + H1024.esc(e.info) + '" target="_blank" rel="noopener">' + H1024.t(L.info) + '</a>' : "";
+      return '<li class="h-show" id="show-' + e.key + '">' +
+        '<div class="h-show__date"><b>' + e.d + '</b><span>' + H1024.esc(wd + ", " + mo) + '</span></div>' +
+        '<div><h3 class="h-show__name">' + H1024.esc(e.name) + '</h3>' +
+        '<p class="h-show__place">' + H1024.esc([e.venue !== e.name ? e.venue : "", e.place].filter(Boolean).join(" — ")) + '</p></div>' +
+        '<div class="h-show__cta">' + cta + '</div></li>';
+    }).join("") : '<li class="h-empty">' + H1024.t(L.none) + '</li>';
+
+    /* calendar (Monday first) */
+    var first = new Date(y, m-1, 1);
+    var lead = (first.getDay() + 6) % 7;
+    var days = new Date(y, m, 0).getDate();
+    var today = new Date();
+    var has = {};
+    list.forEach(function(e){ has[e.d] = e.key; });
+    var cells = [];
+    for (var i = 0; i < lead; i++) cells.push("<span></span>");
+    for (var d = 1; d <= days; d++) {
+      var isToday = today.getFullYear() === y && today.getMonth() === m-1 && today.getDate() === d;
+      cells.push(has[d]
+        ? '<button type="button" tabindex="-1" data-go="' + has[d] + '">' + d + '</button>'
+        : '<span' + (isToday ? ' class="is-today"' : '') + '>' + d + '</span>');
+    }
+    $(".h-shows__days").innerHTML = cells.join("");
+  }
+
+  function paintDow(){
+    var base = new Date(2024, 0, 1); /* a Monday */
+    var out = [];
+    for (var i = 0; i < 7; i++) {
+      out.push("<span>" + new Date(2024, 0, 1 + i).toLocaleDateString(H1024.locale(), {weekday:"narrow"}) + "</span>");
+    }
+    $(".h-shows__dow").innerHTML = out.join("");
+  }
+
+  $(".h-shows__days").addEventListener("click", function(e){
+    var b = e.target.closest("[data-go]");
+    if (!b) return;
+    var row = document.getElementById("show-" + b.getAttribute("data-go"));
+    if (!row) return;
+    row.scrollIntoView({block:"nearest", behavior:"smooth"});
+    row.setAttribute("data-flash",""); setTimeout(function(){ row.removeAttribute("data-flash"); }, 1600);
+  });
+
+  function start(list){
+    events = list.filter(function(e){ return e.y; }).sort(function(a,b){ return a.key < b.key ? -1 : 1; });
+    var todayKey = new Date().toISOString().slice(0,10);
+    events = events.filter(function(e){ return e.key >= todayKey; });
+
+    if (!events.length) {
+      if (USE_WIDGET_FALLBACK && ARTIST) return widget();
+      $(".h-shows__grid").innerHTML = '<p class="h-empty">' + H1024.t(L.empty) + '</p>';
+      root.querySelector(".h-controls").hidden = true;
+      return;
+    }
+    months = events.map(function(e){ return e.key.slice(0,7); }).filter(function(v,i,a){ return a.indexOf(v) === i; });
+    paintDow();
+    var step = H1024.stepper({
+      prev: prev, next: next, count: function(){ return months.length; },
+      onChange: function(i){ mi = i; renderMonth(); }, swipe: $(".h-shows__cal")
+    });
+    step.go(0);
+    H1024.onLang(function(){ paintDow(); renderMonth(); });
+  }
+
+  /* resolve theme colours to plain rgb() for the Bandsintown widget */
+  function solid(cssColor){
+    var probe = document.createElement("span");
+    probe.style.color = cssColor; probe.style.display = "none";
+    root.appendChild(probe);
+    var c = getComputedStyle(probe).color; probe.remove();
+    var cv = document.createElement("canvas"); cv.width = cv.height = 1;
+    var ctx = cv.getContext("2d"); ctx.fillStyle = c; ctx.fillRect(0,0,1,1);
+    var d = ctx.getImageData(0,0,1,1).data;
+    return "rgba(" + d[0] + "," + d[1] + "," + d[2] + "," + (d[3]/255).toFixed(2) + ")";
+  }
+  function widget(){
+    var C = { text:solid("var(--h-text)"), bg:solid("var(--h-bg)"), btn:solid("var(--h-btn-bg)"),
+              btnText:solid("var(--h-btn-text)"), line:solid("var(--h-line)") };
+    root.querySelector(".h-shows__grid").hidden = true;
+    root.querySelector(".h-controls").hidden = true;
+    var w = $(".h-shows__widget");
+    w.innerHTML = '<a class="bit-widget-initializer" data-artist-name="' + H1024.esc(ARTIST) + '"' +
+      ' data-display-local-dates="true" data-display-past-dates="false" data-auto-style="false"' +
+      ' data-text-color="' + C.text + '" data-link-color="' + C.btn + '" data-background-color="rgba(0,0,0,0)"' +
+      ' data-display-limit="10" data-display-start-time="false" data-link-text-color="' + C.btnText + '"' +
+      ' data-popup-background-color="' + C.bg + '" data-separator-color="' + C.line + '"' +
+      ' data-display-lineup="false" data-display-play-my-city="true" data-language="' + H1024.lang + '"></a>';
+    var s = document.createElement("script");
+    s.src = "https://widgetv3.bandsintown.com/main.min.js"; s.charset = "utf-8";
+    w.appendChild(s);
+  }
+
+  if (BIT_APP_ID) {
+    fetch("https://rest.bandsintown.com/artists/" + encodeURIComponent(ARTIST) + "/events?date=upcoming&app_id=" + encodeURIComponent(BIT_APP_ID))
+      .then(function(r){ if (!r.ok) throw new Error(r.status); return r.json(); })
+      .then(function(d){ start(Array.isArray(d) ? fromBit(d) : MANUAL_EVENTS.map(norm)); })
+      .catch(function(err){ console.warn("[h1024] Bandsintown:", err); start(MANUAL_EVENTS.map(norm)); });
+  } else {
+    start(MANUAL_EVENTS.map(norm));
+  }
+
+  H1024.applyStatic(root);
+})();
+</script>
