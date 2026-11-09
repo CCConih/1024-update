@@ -29,10 +29,10 @@ document.querySelectorAll('a[href^="/"]:not([href^="//"])').forEach(function(a){
 """
 
 hdr = read('01-header-FOOTER-injection.html')
-# Preview only: page addresses end in .html, the home video is a local copy, Music gets a test background.
+# Preview only: page addresses end in .html (and sit in a subfolder on GitHub Pages), the home video is a local copy, Music gets a test background.
 liquid = (read('01c-liquid-bg-FOOTER-injection.html')
           .replace(r'var cfg = BACKGROUNDS[location.pathname.replace(/\/$/, "")]',
-                   r'var cfg = BACKGROUNDS[location.pathname.replace(/(\/|\.html)$/, "")]')
+                   r'var cfg = BACKGROUNDS["/" + location.pathname.split("/").pop().replace(/\.html$/, "")]')
           .replace('"/music":     { img: ""', '"/music":     { img: "test-bg.jpg"'))
 cut = hdr.rindex('<script>')
 wrap = lambda html: '<section class="page-section"><div class="content-wrapper">' + html + '</div></section>\n'

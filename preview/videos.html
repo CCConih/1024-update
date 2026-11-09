@@ -843,7 +843,7 @@ document.querySelectorAll('a[href^="/"]:not([href^="//"])').forEach(function(a){
   var still = matchMedia("(prefers-reduced-motion: reduce)").matches;
   var root = document.documentElement;
   var video = document.querySelector("#home video");
-  var cfg = BACKGROUNDS[location.pathname.replace(/(\/|\.html)$/, "")] || {};
+  var cfg = BACKGROUNDS["/" + location.pathname.split("/").pop().replace(/\.html$/, "")] || {};
   var img = (phone && cfg.mobile) || cfg.img;
   if (!video && !img) return;
   var dim = video ? DIM_HOME : DIM_PAGES;
