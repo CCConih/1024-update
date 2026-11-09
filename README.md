@@ -1,22 +1,5 @@
 # Hindia 1024 — Squarespace custom code kit (multi-page)
 
-Plan note: Code Injection and code blocks that run JavaScript need a Squarespace plan above Personal.
-
-The site is split into separate pages, like an artist site with its own page per menu item:
-the home page is one full-window video, and Music, Videos, Shows, Merch, Postcards, News and About
-each have their own page.
-
-## Site-wide code (every page)
-
-| File | Where it goes |
-|---|---|
-| `00-global-HEADER-injection.html` | Settings → Advanced → Code Injection → **Header** |
-| `01-header-FOOTER-injection.html` | Settings → Advanced → Code Injection → **Footer** (hides the native header) |
-| `01b-guestbook-FOOTER-injection.html` | Same **Footer** box, pasted right after 01 (guest book pop-up on every page) |
-| `01c-liquid-bg-FOOTER-injection.html` | Same **Footer** box, pasted after 01b (liquid background) |
-| `10-footer.html` | Edit **site footer** → Code Block |
-| `guestbook-apps-script.gs` | Google Sheet → Extensions → Apps Script (deploy as Web app) |
-
 ## Pages
 
 Create these in **Pages**, each with the URL slug shown (Page settings → URL slug).
